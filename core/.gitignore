@@ -9,6 +9,8 @@ build/
 # https://dart.dev/guides/libraries/private-files#pubspeclock.
 pubspec.lock
 
+# these kind of files should be generated with 'dart pub run build_runner build'
+*.g.dart
 
 *.iml
 .idea/

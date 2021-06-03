@@ -1,19 +1,12 @@
-A library for Dart developers.
+## P2P Chat core
 
-## Usage
+This is the library used by the desktop and android app
 
-A simple usage example:
 
-```dart
-import 'package:p2p_chat_core/p2p_chat_core.dart';
+## Build
 
-main() {
-  var awesome = new Awesome();
-}
+Before building you'll need to run the following command for to create the auto-generated code
+
+```shell
+dart pub run build_runner build
 ```
-
-## Features and bugs
-
-Please file feature requests and bugs at the [issue tracker][tracker].
-
-[tracker]: http://example.com/issues/replaceme
