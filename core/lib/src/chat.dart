@@ -7,8 +7,8 @@ import 'dart:typed_data';
 
 import 'model.dart';
 
-/// base class for a message handler
-abstract class MessageHandler {
+/// base class for a chat
+abstract class Chat {
 
   /// Sends the [text] message to the other peer
   void sendText(String text) {
@@ -22,11 +22,11 @@ abstract class MessageHandler {
 
 typedef MessageCallback = void Function(Message message);
 
-class TcpMessageHandler extends MessageHandler {
+class TcpChat extends Chat {
   final Socket socket;
   final MessageCallback onMessageReceived;
 
-  TcpMessageHandler(this.socket, this.onMessageReceived, {Function? onError}) {
+  TcpChat(this.socket, this.onMessageReceived, {Function? onError}) {
     socket.listen(_listen, onError: onError);
   }
 
