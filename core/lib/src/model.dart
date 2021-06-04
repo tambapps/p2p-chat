@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:json_annotation/json_annotation.dart';
 
 // auto-generated file (see below how)
@@ -15,5 +17,14 @@ class Message {
   factory Message.fromJson(Map<String, dynamic> json) => _$MessageFromJson(json);
 
   Map<String, dynamic> toJson() => _$MessageToJson(this);
+
+}
+
+
+class Peer {
+  final InternetAddress address;
+  final int port;
+
+  Peer(this.address, this.port);
 
 }
