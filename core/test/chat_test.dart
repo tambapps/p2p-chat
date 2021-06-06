@@ -13,10 +13,8 @@ void main() {
 
     test('send text Test', () async {
       final chatServer = await server();
-      print('Connecting to socket');
-      final socket = await WebSocket.connect('ws://localhost:${ChatServer.PORT}');
+      final chat = await Chat.from(InternetAddress.loopbackIPv4, (message) => print('Client received message ' + jsonEncode(message)));
       print('Connected to socket');
-      final chat = Chat(socket, (message) => print('Client received message ' + jsonEncode(message)));
       chat.sendText('Hello');
       chatServer.sendText('World');
       await Future.delayed(Duration(seconds: 2));
@@ -28,7 +26,7 @@ void main() {
 
 Future<ChatServer> server() async {
   // bind the socket server to an address and port
-  final server = await WebsocketServer.from('localhost', ChatServer.PORT);
+  final server = await WebsocketServer.from(InternetAddress.loopbackIPv4, ChatServer.PORT);
   print('Server started');
   final chatServer = ChatServer(server, (message) {
     print('Server received message ' + jsonEncode(message));

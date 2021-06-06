@@ -39,6 +39,7 @@ typedef MessageCallback = void Function(Message message);
 
 class ChatServer extends _AbstractChat {
 
+  // HTTP port. Required since we're using an Http Server for the Web Socket
   static const PORT = 8000;
 
   final WebsocketServer server;
@@ -73,6 +74,12 @@ class ChatServer extends _AbstractChat {
 class Chat extends _AbstractChat {
 
   final WebSocket socket;
+
+  static Future<Chat> from(InternetAddress address,
+      MessageCallback onMessageReceived, {Function? onError}) async {
+    final socket = await WebSocket.connect('ws://${address.address}:${ChatServer.PORT}');
+    return Chat(socket, onMessageReceived, onError: onError);
+  }
 
   Chat(this.socket, MessageCallback onMessageReceived, {Function? onError}) {
     socket.listen((bytes) => onMessageReceived(toMessage(bytes)), onError: onError);
