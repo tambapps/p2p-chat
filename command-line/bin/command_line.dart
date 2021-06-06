@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:args/args.dart';
@@ -21,16 +22,12 @@ void main(List<String> arguments) async {
     }
     chat = await clientChat(callback, address);
   }
-  var chatting = true;
-  while (chatting) {
-    var line = stdin.readLineSync();
-    if (line != null) {
-      chat.sendText(line);
-    } else {
-      chatting = false;
-    }
-  }
-  print('Chat ended');
+
+  // dart is single threaded. If I would have processed the lines synchronously (e.g with stdin.readLineSync())
+  // it would have block the synchronouslyonly thread and gave no room for the server to handle requests
+  stdin.transform(utf8.decoder).listen((String text) {
+    chat.sendText(text);
+  });
 }
 
 Future<Chat> clientChat(MessageCallback messageCallback, String address) async {
@@ -50,7 +47,7 @@ Future<Chat> serverChat(MessageCallback messageCallback) async {
         return true;
       });
   chatServer.start();
-  print('Server started on ${chatServer.address.address}. Waiting on a connection...');
+  print('Server started on ${chatServer.address.address}.\nWaiting on a connection...');
   return chatServer;
 }
 
