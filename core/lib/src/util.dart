@@ -15,3 +15,15 @@ Future<InternetAddress> toAddress(address) async {
     }
   }
 }
+
+/// doesn't work on android according to https://stackoverflow.com/questions/52411168/how-to-get-device-ip-in-dart-flutter
+/// use WifiFlutter instead for android
+Future<InternetAddress> getDesktopIpAddress() async {
+  final addresses = (await NetworkInterface.list(includeLoopback: false, includeLinkLocal: true))
+      .expand((interface) => interface.addresses).toList(growable: false);
+  if (addresses.isEmpty) {
+    throw StateError("Couldn't find IP address");
+  }
+  // didn't find any better way to choose when there are several IPs
+  return addresses[0];
+}
