@@ -18,7 +18,15 @@ class Message {
   Map<String, dynamic> toJson() => _$MessageToJson(this);
 
 }
+@JsonSerializable()
+class UserData {
+  final String username;
+ const UserData(this.username);
 
+  factory UserData.fromJson(Map<String, dynamic> json) => _$UserDataFromJson(json);
+
+  Map<String, dynamic> toJson() => _$UserDataToJson(this);
+}
 
 class Peer {
   final InternetAddress address;

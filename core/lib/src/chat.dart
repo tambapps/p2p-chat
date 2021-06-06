@@ -35,6 +35,8 @@ abstract class Chat {
   }
 
   void close();
+
+  UserData get userData;
 }
 
 typedef MessageCallback = void Function(Message message);
@@ -46,6 +48,7 @@ typedef ConnectionCallback = bool Function(dynamic data);
 // TODO handle server errors
 class ChatServer extends Chat {
 
+
   // HTTP port. Required since we're using an Http Server for the Web Socket
   static const PORT = 8000;
 
@@ -53,8 +56,10 @@ class ChatServer extends Chat {
   final MessageCallback onMessageReceived;
   final ConnectionCallback? onNewSocket;
   final List<WebSocket> sockets = [];
+  @override
+  UserData userData;
 
-  ChatServer(this.server, this.onMessageReceived, {this.onNewSocket});
+  ChatServer(this.server, this.onMessageReceived, {this.onNewSocket, this.userData = const UserData('anonymous')});
 
   static Future<ChatServer> from(address, MessageCallback onMessageReceived,
       {ConnectionCallback? onNewSocket}) async {
@@ -93,6 +98,8 @@ class ChatServer extends Chat {
 class ChatClient extends Chat {
 
   final WebSocket socket;
+  @override
+  UserData userData;
 
   /// [address] must be the String address, or the InternetAddress
   static Future<ChatClient> from(addressArg,
@@ -102,7 +109,7 @@ class ChatClient extends Chat {
     return ChatClient(socket, onMessageReceived, onError: onError);
   }
 
-  ChatClient(this.socket, MessageCallback onMessageReceived, {Function? onError}) {
+  ChatClient(this.socket, MessageCallback onMessageReceived, {Function? onError, this.userData = const UserData('anonymous')}) {
     socket.listen((bytes) => onMessageReceived(toMessage(bytes)), onError: onError);
   }
 
