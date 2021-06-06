@@ -8,7 +8,7 @@ void main(List<String> arguments) async {
   print('P2P Chat 0.0.1');
 
   var argResults = getArgs(arguments);
-  MessageCallback callback = (message) => print('[TODO user] at ${message.sentAt}\n${message.text}');
+  var callback = (Message message) => print('[TODO user] at ${message.sentAt}\n${message.text}');
 
   Chat chat;
   if (argResults['server']) {
