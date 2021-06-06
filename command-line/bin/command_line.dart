@@ -6,7 +6,6 @@ import 'package:p2p_chat_core/p2p_chat_core.dart';
 // TODO add colors (?)
 void main(List<String> arguments) async {
   print('P2P Chat 0.0.1');
-  print("Tap text and press 'Enter' to send a message");
 
   var argResults = getArgs(arguments);
   MessageCallback callback = (message) => print('[TODO user] at ${message.sentAt}\n${message.text}');
@@ -35,7 +34,11 @@ void main(List<String> arguments) async {
 }
 
 Future<Chat> clientChat(MessageCallback messageCallback, String address) async {
-  return ChatClient.from(address, messageCallback);
+  print('Connecting to $address');
+  var chat = await ChatClient.from(address, messageCallback);
+  print('Connected successfully');
+  print("Tap text and press 'Enter' to send a message");
+  return chat;
 }
 
 Future<Chat> serverChat(MessageCallback messageCallback) async {
@@ -43,6 +46,7 @@ Future<Chat> serverChat(MessageCallback messageCallback) async {
   var chatServer = await ChatServer.from(InternetAddress.loopbackIPv4, messageCallback,
       onNewSocket: (user) {
         print('$user connected!');
+        print("Tap text and press 'Enter' to send a message");
         return true;
       });
   chatServer.start();
