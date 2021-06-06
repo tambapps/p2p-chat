@@ -4,7 +4,6 @@ import 'dart:io';
 import 'package:args/args.dart';
 import 'package:p2p_chat_core/p2p_chat_core.dart';
 
-// TODO add colors (?)
 void main(List<String> arguments) async {
   print('P2P Chat 0.0.1');
   var argResults = getArgs(arguments);

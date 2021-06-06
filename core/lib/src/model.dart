@@ -5,6 +5,8 @@ import 'package:json_annotation/json_annotation.dart';
 part 'model.g.dart';
 // annotation allowing code auto-generation
 // run 'dart run build_runner build' to auto-generate code
+// TODO store key in messages. It will be given by the server when connecting,
+// (should be different for each user) and it will verify for each incoming messages
 @JsonSerializable()
 class Message {
 
