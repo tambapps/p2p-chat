@@ -15,7 +15,7 @@ abstract class Chat {
 
   /// Sends the [text] message to the other peer
   void sendText(String text) {
-    sendMessage(Message(text, DateTime.now()));
+    sendMessage(Message(address.address, userData, text, DateTime.now()));
   }
 
   /// Sends the [message] to the other peer
@@ -37,6 +37,7 @@ abstract class Chat {
   void close();
 
   UserData get userData;
+  InternetAddress get address;
 }
 
 typedef MessageCallback = void Function(Message message);
@@ -90,6 +91,7 @@ class ChatServer extends Chat {
     server.close(force: force);
   }
 
+  @override
   InternetAddress get address {
     return server.server.address;
   }
@@ -121,5 +123,11 @@ class ChatClient extends Chat {
   @override
   void close() {
     socket.close();
+  }
+
+  @override
+  InternetAddress get address {
+    // TODO replace this getter by get identifier, the server should give the client an identifier through handshake
+    return InternetAddress.loopbackIPv4;
   }
 }

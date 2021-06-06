@@ -8,7 +8,7 @@ import 'package:p2p_chat_core/p2p_chat_core.dart';
 void main(List<String> arguments) async {
   print('P2P Chat 0.0.1');
   var argResults = getArgs(arguments);
-  var callback = (Message message) => print('[TODO user] at ${message.sentAt.hour}:${message.sentAt.second}\n${message.text}');
+  var callback = (Message message) => print('${message.userData.username} at ${message.sentAt.hour}:${message.sentAt.second}:\n${message.text}');
   String? address = argResults['address'];
 
   Chat chat;

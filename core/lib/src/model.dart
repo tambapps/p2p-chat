@@ -8,10 +8,12 @@ part 'model.g.dart';
 @JsonSerializable()
 class Message {
 
+  String address;
+  UserData userData;
   String text;
   DateTime sentAt;
 
-  Message(this.text, this.sentAt);
+  Message(this.address, this.userData, this.text, this.sentAt);
 
   factory Message.fromJson(Map<String, dynamic> json) => _$MessageFromJson(json);
 
@@ -21,7 +23,7 @@ class Message {
 @JsonSerializable()
 class UserData {
   final String username;
- const UserData(this.username);
+  const UserData(this.username);
 
   factory UserData.fromJson(Map<String, dynamic> json) => _$UserDataFromJson(json);
 
