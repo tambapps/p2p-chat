@@ -37,6 +37,10 @@ abstract class _AbstractChat {
 
 typedef MessageCallback = void Function(Message message);
 
+// TODO create a DOJO (POJO for dart) for user data (username)
+/// return false if user should be filtered
+typedef ConnectionCallback = bool Function(dynamic data);
+
 class ChatServer extends _AbstractChat {
 
   // HTTP port. Required since we're using an Http Server for the Web Socket
@@ -44,17 +48,25 @@ class ChatServer extends _AbstractChat {
 
   final WebsocketServer server;
   final MessageCallback onMessageReceived;
-  final MessageCallback? onNewSocket;
+  final ConnectionCallback? onNewSocket;
   final List<WebSocket> sockets = [];
 
   ChatServer(this.server, this.onMessageReceived, {this.onNewSocket});
+
+  static Future<ChatServer> from(InternetAddress address, MessageCallback onMessageReceived,
+      {ConnectionCallback? onNewSocket}) async {
+    final server = await WebsocketServer.from(InternetAddress.loopbackIPv4, ChatServer.PORT);
+    return ChatServer(server, onMessageReceived, onNewSocket: onNewSocket);
+  }
 
   void start() {
     server.listen((socket) { 
       // TODO do handshake and stuff
       //   add optional key password
-      socket.listen((bytes) => onMessageReceived(toMessage(bytes)));
-      sockets.add(socket);
+      if (onNewSocket == null || onNewSocket!.call(socket)) {
+        socket.listen((bytes) => onMessageReceived(toMessage(bytes)));
+        sockets.add(socket);
+      }
     });
   }
 

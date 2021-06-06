@@ -2,7 +2,6 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:p2p_chat_core/src/chat.dart';
-import 'package:p2p_chat_core/src/io.dart';
 import 'package:test/test.dart';
 
 void main() {
@@ -25,12 +24,10 @@ void main() {
 }
 
 Future<ChatServer> server() async {
-  // bind the socket server to an address and port
-  final server = await WebsocketServer.from(InternetAddress.loopbackIPv4, ChatServer.PORT);
-  print('Server started');
-  final chatServer = ChatServer(server, (message) {
+  final chatServer = await ChatServer.from(InternetAddress.loopbackIPv4, (message) {
     print('Server received message ' + jsonEncode(message));
   });
   chatServer.start();
+  print('Server started');
   return chatServer;
 }
