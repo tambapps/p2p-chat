@@ -12,7 +12,7 @@ void main() {
 
     test('send text Test', () async {
       final chatServer = await server();
-      final chat = await Chat.from(InternetAddress.loopbackIPv4, (message) => print('Client received message ' + jsonEncode(message)));
+      final chat = await ChatClient.from(InternetAddress.loopbackIPv4, (message) => print('Client received message ' + jsonEncode(message)));
       print('Connected to socket');
       chat.sendText('Hello');
       chatServer.sendText('World');

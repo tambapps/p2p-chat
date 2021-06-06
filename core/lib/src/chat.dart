@@ -9,7 +9,7 @@ import 'io.dart';
 import 'model.dart';
 
 /// base class for a chat
-abstract class _AbstractChat {
+abstract class Chat {
 
   /// Sends the [text] message to the other peer
   void sendText(String text) {
@@ -41,7 +41,7 @@ typedef MessageCallback = void Function(Message message);
 /// return false if user should be filtered
 typedef ConnectionCallback = bool Function(dynamic data);
 
-class ChatServer extends _AbstractChat {
+class ChatServer extends Chat {
 
   // HTTP port. Required since we're using an Http Server for the Web Socket
   static const PORT = 8000;
@@ -83,17 +83,24 @@ class ChatServer extends _AbstractChat {
   }
 }
 
-class Chat extends _AbstractChat {
+class ChatClient extends Chat {
 
   final WebSocket socket;
 
-  static Future<Chat> from(InternetAddress address,
+  /// [address] must be the String address, or the InternetAddress
+  static Future<ChatClient> from(address,
       MessageCallback onMessageReceived, {Function? onError}) async {
-    final socket = await WebSocket.connect('ws://${address.address}:${ChatServer.PORT}');
-    return Chat(socket, onMessageReceived, onError: onError);
+    String addressString;
+    if (address is InternetAddress) {
+      addressString = address.address;
+    } else {
+      addressString = address.toString();
+    }
+    final socket = await WebSocket.connect('ws://$addressString:${ChatServer.PORT}');
+    return ChatClient(socket, onMessageReceived, onError: onError);
   }
 
-  Chat(this.socket, MessageCallback onMessageReceived, {Function? onError}) {
+  ChatClient(this.socket, MessageCallback onMessageReceived, {Function? onError}) {
     socket.listen((bytes) => onMessageReceived(toMessage(bytes)), onError: onError);
   }
 
