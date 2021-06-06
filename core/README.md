@@ -2,6 +2,7 @@
 
 This is the library used by the desktop and android app
 
+This uses WabSocket, for compatibility with the web (the web app will come later)
 
 ## Build
 

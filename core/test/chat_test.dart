@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:p2p_chat_core/src/chat.dart';
+import 'package:p2p_chat_core/src/io.dart';
 import 'package:test/test.dart';
 
 void main() {
@@ -11,20 +12,26 @@ void main() {
     });
 
     test('send text Test', () async {
-      server();
-      final socket = await Socket.connect('localhost', 4567);
-      final messageHandler = TcpChat(socket, (message) => print('Client received message ' + jsonEncode(message)));
-      messageHandler.sendText('World');
+      final chatServer = await server();
+      print('Connecting to socket');
+      final socket = await WebSocket.connect('ws://localhost:8000');
+      print('Connected to socket');
+      final chat = Chat(socket, (message) => print('Client received message ' + jsonEncode(message)));
+      chat.sendText('Hello');
+      chatServer.sendText('World');
       await Future.delayed(Duration(seconds: 2));
+      chatServer.close();
     });
   });
 }
 
-void server() async {
+Future<ChatServer> server() async {
   // bind the socket server to an address and port
-  final server = await ServerSocket.bind(InternetAddress.anyIPv4, 4567);
-  server.listen((client) {
-    final messageHandler = TcpChat(client, (message) => print('Server received message ' + jsonEncode(message)));
-    messageHandler.sendText('Hello');
+  final server = await WebsocketServer.from('localhost', 8000);
+  print('Server started');
+  final chatServer = ChatServer(server, (message) {
+    print('Server received message ' + jsonEncode(message));
   });
+  chatServer.start();
+  return chatServer;
 }

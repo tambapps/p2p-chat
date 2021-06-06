@@ -1,14 +1,15 @@
-// TODO: Put public facing types in this file.
-
 import 'dart:convert';
 import 'dart:io';
 
 import 'dart:typed_data';
 
+import 'package:meta/meta.dart';
+
+import 'io.dart';
 import 'model.dart';
 
 /// base class for a chat
-abstract class Chat {
+abstract class _AbstractChat {
 
   /// Sends the [text] message to the other peer
   void sendText(String text) {
@@ -16,36 +17,65 @@ abstract class Chat {
   }
 
   /// Sends the [message] to the other peer
-  void sendMessage(Message message);
+  void sendMessage(Message message) {
+    // if I send String, the triggered event data will be String
+    // if I send bytes, it will be bytes. For simplicity, let's send bytes (and therefore
+    // handle bytes) everytime
+    sendData(jsonEncode(message).codeUnits);
+  }
 
+  @protected
+  void sendData(data);
+
+  @protected
+  Message toMessage(Uint8List data) {
+    return Message.fromJson(jsonDecode(String.fromCharCodes(data)));
+  }
 }
 
 typedef MessageCallback = void Function(Message message);
 
-class TcpChat extends Chat {
-  final Socket socket;
-  final MessageCallback onMessageReceived;
+class ChatServer extends _AbstractChat {
 
-  TcpChat(this.socket, this.onMessageReceived, {Function? onError}) {
-    socket.listen(_listen, onError: onError);
+  final WebsocketServer server;
+  final MessageCallback onMessageReceived;
+  final MessageCallback? onNewSocket;
+  final List<WebSocket> sockets = [];
+
+  ChatServer(this.server, this.onMessageReceived, {this.onNewSocket});
+
+  void start() {
+    server.listen((socket) { 
+      // TODO do handshake and stuff
+      //   add optional key password
+      socket.listen((bytes) => onMessageReceived(toMessage(bytes)));
+      sockets.add(socket);
+    });
   }
 
   @override
-  void sendMessage(Message message) {
-    socket.write(jsonEncode(message));
+  void sendData(data) {
+    for (var client in sockets) {
+      client.add(data);
+    }
   }
 
-  void _listen(Uint8List data) {
-    final message = Message.fromJson(jsonDecode(String.fromCharCodes(data)));
-    onMessageReceived.call(message);
+  void close({bool force = false}) {
+    server.close(force: force);
+  }
+}
+
+class Chat extends _AbstractChat {
+
+  final WebSocket socket;
+
+  Chat(this.socket, MessageCallback onMessageReceived, {Function? onError}) {
+    socket.listen((bytes) => onMessageReceived(toMessage(bytes)), onError: onError);
   }
 
-  void destroy() {
-    socket.destroy();
+  @override
+  void sendData(data) {
+    socket.add(data);
   }
 
 }
-
-
-
-
