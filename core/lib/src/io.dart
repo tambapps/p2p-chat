@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 typedef WebSocketCallback = void Function(WebSocket socket);
@@ -12,8 +13,8 @@ class WebsocketServer {
     return WebsocketServer(await HttpServer.bind(address, 8000));
   }
 
-  void listen(WebSocketCallback onNewSocket) async {
-    server.listen((HttpRequest request) {
+  StreamSubscription<HttpRequest> listen(WebSocketCallback onNewSocket) {
+    return server.listen((HttpRequest request) {
       WebSocketTransformer.upgrade(request).then((WebSocket ws) => onNewSocket(ws),
           onError: (err) => print('[!]Error -- ${err.toString()}'));
 

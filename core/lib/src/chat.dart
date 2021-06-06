@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
@@ -61,8 +62,8 @@ class ChatServer extends Chat {
     return ChatServer(server, onMessageReceived, onNewSocket: onNewSocket);
   }
 
-  void start() {
-    server.listen((socket) { 
+  StreamSubscription<HttpRequest> start() {
+    return server.listen((socket) {
       // TODO do handshake and stuff
       //   add optional key password
       if (onNewSocket == null || onNewSocket!.call(socket)) {
