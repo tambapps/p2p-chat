@@ -4,6 +4,7 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:meta/meta.dart';
+import 'package:p2p_chat_core/src/util.dart';
 
 import 'io.dart';
 import 'model.dart';
@@ -53,9 +54,9 @@ class ChatServer extends Chat {
 
   ChatServer(this.server, this.onMessageReceived, {this.onNewSocket});
 
-  static Future<ChatServer> from(InternetAddress address, MessageCallback onMessageReceived,
+  static Future<ChatServer> from(address, MessageCallback onMessageReceived,
       {ConnectionCallback? onNewSocket}) async {
-    final server = await WebsocketServer.from(InternetAddress.loopbackIPv4, ChatServer.PORT);
+    final server = await WebsocketServer.from(toAddress(address), ChatServer.PORT);
     return ChatServer(server, onMessageReceived, onNewSocket: onNewSocket);
   }
 
@@ -88,15 +89,10 @@ class ChatClient extends Chat {
   final WebSocket socket;
 
   /// [address] must be the String address, or the InternetAddress
-  static Future<ChatClient> from(address,
+  static Future<ChatClient> from(addressArg,
       MessageCallback onMessageReceived, {Function? onError}) async {
-    String addressString;
-    if (address is InternetAddress) {
-      addressString = address.address;
-    } else {
-      addressString = address.toString();
-    }
-    final socket = await WebSocket.connect('ws://$addressString:${ChatServer.PORT}');
+    var address = toAddress(addressArg);
+    final socket = await WebSocket.connect('ws://${address.address}:${ChatServer.PORT}');
     return ChatClient(socket, onMessageReceived, onError: onError);
   }
 
