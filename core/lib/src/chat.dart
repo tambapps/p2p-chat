@@ -31,11 +31,15 @@ abstract class _AbstractChat {
   Message toMessage(Uint8List data) {
     return Message.fromJson(jsonDecode(String.fromCharCodes(data)));
   }
+
+  void close();
 }
 
 typedef MessageCallback = void Function(Message message);
 
 class ChatServer extends _AbstractChat {
+
+  static const PORT = 8000;
 
   final WebsocketServer server;
   final MessageCallback onMessageReceived;
@@ -60,6 +64,7 @@ class ChatServer extends _AbstractChat {
     }
   }
 
+  @override
   void close({bool force = false}) {
     server.close(force: force);
   }
@@ -78,4 +83,8 @@ class Chat extends _AbstractChat {
     socket.add(data);
   }
 
+  @override
+  void close() {
+    socket.close();
+  }
 }
