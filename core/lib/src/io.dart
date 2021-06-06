@@ -2,6 +2,7 @@ import 'dart:io';
 
 typedef WebSocketCallback = void Function(WebSocket socket);
 
+// TODO handle server errors
 class WebsocketServer {
   HttpServer server;
 

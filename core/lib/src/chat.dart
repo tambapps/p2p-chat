@@ -42,6 +42,7 @@ typedef MessageCallback = void Function(Message message);
 /// return false if user should be filtered
 typedef ConnectionCallback = bool Function(dynamic data);
 
+// TODO handle server errors
 class ChatServer extends Chat {
 
   // HTTP port. Required since we're using an Http Server for the Web Socket
@@ -56,7 +57,7 @@ class ChatServer extends Chat {
 
   static Future<ChatServer> from(address, MessageCallback onMessageReceived,
       {ConnectionCallback? onNewSocket}) async {
-    final server = await WebsocketServer.from(toAddress(address), ChatServer.PORT);
+    final server = await WebsocketServer.from(await toAddress(address), ChatServer.PORT);
     return ChatServer(server, onMessageReceived, onNewSocket: onNewSocket);
   }
 
@@ -82,6 +83,10 @@ class ChatServer extends Chat {
   void close({bool force = false}) {
     server.close(force: force);
   }
+
+  InternetAddress get address {
+    return server.server.address;
+  }
 }
 
 class ChatClient extends Chat {
@@ -91,7 +96,7 @@ class ChatClient extends Chat {
   /// [address] must be the String address, or the InternetAddress
   static Future<ChatClient> from(addressArg,
       MessageCallback onMessageReceived, {Function? onError}) async {
-    var address = toAddress(addressArg);
+    var address = await toAddress(addressArg);
     final socket = await WebSocket.connect('ws://${address.address}:${ChatServer.PORT}');
     return ChatClient(socket, onMessageReceived, onError: onError);
   }
