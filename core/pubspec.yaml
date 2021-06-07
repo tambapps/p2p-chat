@@ -10,7 +10,7 @@ environment:
 #   path: ^1.8.0
 dependencies:
   json_annotation: ^4.0.1
-  meta: ^1.4.0
+  meta: ^1.3.0
 
 dev_dependencies:
   pedantic: ^1.10.0
