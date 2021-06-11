@@ -1,5 +1,5 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.tambapps.p2p.chat.android.android">
+    package="com.tambapps.p2p.chat.android">
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
    <application
         android:label="android"
