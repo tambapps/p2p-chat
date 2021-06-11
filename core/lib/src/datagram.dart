@@ -9,6 +9,10 @@ class DatagramSocket {
 
   final RawDatagramSocket datagramSocket;
 
+  static Future<DatagramSocket> newInstance() async {
+    return DatagramSocket(await RawDatagramSocket.bind(await getDesktopIpAddress(), 0));
+  }
+
   DatagramSocket(this.datagramSocket);
 
   static Future<DatagramSocket> from(int port, {InternetAddress? groupAddress}) async {
@@ -19,7 +23,7 @@ class DatagramSocket {
     return DatagramSocket(socket);
   }
 
-  void listen(void Function(Uint8List event) onData) {
+  void listen(void Function(Uint8List data) onData) {
     datagramSocket.listen((RawSocketEvent event) {
       if (event == RawSocketEvent.read) {
         Datagram? datagram = datagramSocket.receive();
@@ -30,16 +34,16 @@ class DatagramSocket {
     });
   }
 
-  void multicastObject(Object object, Peer peer) {
-    multicastString(jsonEncode(object), peer);
+  void multicastObject(Object object, InternetAddress address, int port) {
+    multicastString(jsonEncode(object), address, port);
   }
 
-  void multicastString(String data, Peer peer) {
-    multicast(data.codeUnits, peer);
+  void multicastString(String data, InternetAddress address, int port) {
+    multicast(data.codeUnits, address, port);
   }
 
-  void multicast(List<int> buffer, Peer peer) {
-    datagramSocket.send(buffer, peer.address, peer.port);
+  void multicast(List<int> buffer, InternetAddress address, int port) {
+    datagramSocket.send(buffer, address, port);
   }
 
   void close() {

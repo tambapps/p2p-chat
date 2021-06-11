@@ -39,3 +39,28 @@ class Peer {
   Peer(this.address, this.port);
 
 }
+
+enum PeerType {
+  SERVER, CLIENT, ANY
+}
+
+@JsonSerializable()
+class ChatPeer {
+
+  final String address;
+  final PeerType type;
+  final int? port;
+
+
+  factory ChatPeer.fromJson(Map<String, dynamic> json) => _$ChatPeerFromJson(json);
+
+  Map<String, dynamic> toJson() => _$ChatPeerToJson(this);
+
+  ChatPeer.from(InternetAddress address, PeerType type, int port) : this(address.address, type, port);
+  ChatPeer(this.address, this.type, this.port);
+
+  InternetAddress get internetAddress {
+    return InternetAddress(address);
+  }
+
+}
