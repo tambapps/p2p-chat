@@ -15,12 +15,17 @@ class DatagramSocket {
 
   DatagramSocket(this.datagramSocket);
 
-  static Future<DatagramSocket> from(int port, {InternetAddress? groupAddress}) async {
-    final socket = await RawDatagramSocket.bind(InternetAddressType.any, port);
+  static Future<DatagramSocket> from(int port, {InternetAddress? address, InternetAddress? groupAddress}) async {
+    final socket = await RawDatagramSocket.bind(address ?? InternetAddress.anyIPv4, port);
+    socket.readEventsEnabled = true;
     if (groupAddress != null) {
       socket.joinMulticast(groupAddress);
     }
     return DatagramSocket(socket);
+  }
+
+  void joinGroup(InternetAddress address) {
+    datagramSocket.joinMulticast(address);
   }
 
   void listen(void Function(Uint8List data) onData) {

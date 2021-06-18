@@ -10,8 +10,7 @@ import 'dart:io';
 import 'package:p2p_chat_core/p2p_chat_core.dart';
 import 'package:p2p_chat_core/src/datagram.dart';
 
-// TODO use another one because fandom uses same
-final InternetAddress MULTICAST_GROUP_ADDRESS = InternetAddress('ff02::1');
+final InternetAddress MULTICAST_GROUP_ADDRESS = InternetAddress('224.0.0.8');
 final int PEER_DISCOVERY_PORT = 5001;
 
 
@@ -22,7 +21,8 @@ class ChatPeerMulticaster {
   Timer? timer;
 
   static Future<ChatPeerMulticaster> newInstance() async {
-    return ChatPeerMulticaster(await DatagramSocket.newInstance());
+    return ChatPeerMulticaster(await DatagramSocket.from(PEER_DISCOVERY_PORT,
+        address: await getDesktopIpAddress(), groupAddress: MULTICAST_GROUP_ADDRESS));
   }
 
   ChatPeerMulticaster(this.datagramSocket);
@@ -37,7 +37,6 @@ class ChatPeerMulticaster {
   }
 
   void multicast() {
-    print('object');
     datagramSocket.multicastObject(chatPeers, MULTICAST_GROUP_ADDRESS, PEER_DISCOVERY_PORT);
   }
 
@@ -50,12 +49,16 @@ class ChatPeerListener {
 
   final DatagramSocket datagramSocket;
 
-  ChatPeerListener(this.datagramSocket);
+  ChatPeerListener(this.datagramSocket) {
+    datagramSocket.joinGroup(MULTICAST_GROUP_ADDRESS);
+  }
 
-  void listen(void Function(ChatPeer chatPeer) onChatPeerDiscovered) {
+  void listen(void Function(List<ChatPeer> chatPeer) onChatPeerDiscovered) {
     datagramSocket.listen((data) {
       try {
-        onChatPeerDiscovered(ChatPeer.fromJson(jsonDecode(String.fromCharCodes(data))));
+        Iterable l = jsonDecode(String.fromCharCodes(data));
+        var chatPeers = List<ChatPeer>.from(l.map((model) => ChatPeer.fromJson(model)));
+        onChatPeerDiscovered(chatPeers);
       } catch (e) {
         // ignore exception
       }
