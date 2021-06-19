@@ -1,5 +1,6 @@
-import 'package:android/page/chatpage.dart';
 import 'package:flutter/material.dart';
+import 'package:p2p_chat_android/page/chatseekingpage.dart';
+import 'package:p2p_chat_core/p2p_chat_core.dart';
 
 void main() {
   runApp(MyApp());
@@ -85,10 +86,10 @@ class _MyHomePageState extends State<MyHomePage> {
               },
             ),
             ElevatedButton(
-              child: Text('Join chat', style: Theme.of(context).textTheme.headline4),
+              child: Text('Search chat', style: Theme.of(context).textTheme.headline4),
               onPressed: () {
                 Navigator.push(context,
-                    MaterialPageRoute(builder: (context) => ChatPage()));
+                    MaterialPageRoute(builder: (context) => ChatSeekingPage()));
               },
             ),
           ],

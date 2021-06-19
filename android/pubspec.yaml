@@ -1,4 +1,4 @@
-name: android
+name: p2p_chat_android
 description: P2P Chat android app
 
 # The following line prevents the package from being accidentally published to
