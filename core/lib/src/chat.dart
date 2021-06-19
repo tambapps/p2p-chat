@@ -44,7 +44,7 @@ typedef MessageCallback = void Function(Message message);
 
 // TODO create a DOJO (POJO for dart) for user data (username)
 /// return false if user should be filtered
-typedef ConnectionCallback = bool Function(dynamic data);
+typedef ConnectionCallback = bool Function(Chat chat, dynamic data);
 
 // TODO handle server errors
 class ChatServer extends Chat {
@@ -72,7 +72,7 @@ class ChatServer extends Chat {
     return server.listen((socket) {
       // TODO do handshake and stuff
       //   add optional key password
-      if (onNewSocket == null || onNewSocket!.call(socket)) {
+      if (onNewSocket == null || onNewSocket!.call(this, socket)) {
         socket.listen((bytes) => onMessageReceived(toMessage(bytes)));
         sockets.add(socket);
       }
