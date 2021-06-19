@@ -26,7 +26,6 @@ class _ChatPageState extends State<ChatPage> {
   }
 
   Future<void> startChatServer() async {
-    // TODO also work on android so just rename it getIpAddress
     var address = await getDesktopIpAddress();
     chatServer = await ChatServer.from(address, (message) {
       setState(() {

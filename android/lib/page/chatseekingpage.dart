@@ -18,12 +18,21 @@ class _ChatSeekingPageState extends State<ChatSeekingPage> {
 
   late ChatPeerListener chatPeerListener;
 
+  // will later be optional. Thats why it's nullable
+  ChatPeerMulticaster? multicaster;
+
   @override
   void initState() {
     super.initState();
     ChatPeerListener.newInstance().then((chatPeerListener) {
       this.chatPeerListener = chatPeerListener;
       chatPeerListener.listen(this._listen);
+    });
+    // TODO also start server
+    ChatPeerMulticaster.newInstance().then((multicaster) async {
+      this.multicaster = multicaster;
+      multicaster.chatPeers.add(ChatPeer.from(await getDesktopIpAddress(), PeerType.ANY, PEER_DISCOVERY_PORT));
+      multicaster.start();
     });
   }
 
@@ -87,6 +96,7 @@ class _ChatSeekingPageState extends State<ChatSeekingPage> {
   @override
   void dispose() {
     chatPeerListener.close();
+    this.multicaster?.close();
     super.dispose();
   }
 }
