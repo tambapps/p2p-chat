@@ -52,6 +52,18 @@ class ChatPeer {
   final int? port;
 
 
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is ChatPeer &&
+          runtimeType == other.runtimeType &&
+          address == other.address &&
+          type == other.type &&
+          port == other.port;
+
+  @override
+  int get hashCode => address.hashCode ^ type.hashCode ^ port.hashCode;
+
   factory ChatPeer.fromJson(Map<String, dynamic> json) => _$ChatPeerFromJson(json);
 
   Map<String, dynamic> toJson() => _$ChatPeerToJson(this);

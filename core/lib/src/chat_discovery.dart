@@ -47,6 +47,11 @@ class ChatPeerMulticaster {
 
 class ChatPeerListener {
 
+  static Future<ChatPeerListener> newInstance() async {
+    var datagramSocket = await DatagramSocket.from(PEER_DISCOVERY_PORT);
+    return ChatPeerListener(datagramSocket);
+  }
+
   final DatagramSocket datagramSocket;
 
   ChatPeerListener(this.datagramSocket) {
