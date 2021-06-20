@@ -154,10 +154,10 @@ class SmartChat extends Chat {
   Chat chat;
 
   static Future<SmartChat> from(address, MessageCallback onMessageReceived,
-      {ConnectionCallback? onNewSocket, PeerType peerType = PeerType.ANY}) async {
+      {ConnectionCallback? onNewSocket, PeerType peerType = PeerType.ANY, UserData userData = ANONYMOUS_USER}) async {
     final multicaster = await ChatPeerMulticaster.newInstance();
     final listener = await ChatPeerListener.newInstance();
-    final server = await ChatServer.from(address, onMessageReceived, onNewSocket: (chat, data) {
+    final server = await ChatServer.from(address, onMessageReceived, userData: userData, onNewSocket: (chat, data) {
       if (onNewSocket == null || onNewSocket(chat, data)) {
         multicaster.close();
         listener.close();
@@ -189,7 +189,7 @@ class SmartChat extends Chat {
       if (chatPeer.type == PeerType.ANY && this.peerType == PeerType.ANY) {
         // TODO find a way to determine which should be the server
       } else {
-        chat = await ChatClient.from(chatPeers[0], onMessageReceived);
+        chat = await ChatClient.from(chatPeers[0], onMessageReceived, userData: chatServer.userData);
         chatServer.close();
         multicaster.close();
         listener.close();
