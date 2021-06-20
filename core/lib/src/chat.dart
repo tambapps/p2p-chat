@@ -182,10 +182,20 @@ class SmartChat extends Chat {
   }
 
   void _listenChatPeers(List<ChatPeer> chatPeers) async {
-    chat = await ChatClient.from(chatPeers[0], onMessageReceived);
-    chatServer.close();
-    multicaster.close();
-    listener.close();
+    for (var chatPeer in chatPeers) {
+      if (chatPeer.type == PeerType.ANY && this.peerType == PeerType.ANY) {
+        // TODO find a way to determine which should be the server
+      } else {
+        chat = await ChatClient.from(chatPeers[0], onMessageReceived);
+        chatServer.close();
+        multicaster.close();
+        listener.close();
+        // TODO rethink what data should be passed for onNewSocket (maybe user data?)
+        // calling onNewSocket to let the handler of smart chat that a connection has been
+        // made
+        chatServer.onNewSocket?.call(chat, 'something');
+      }
+    }
   }
 
   @override
