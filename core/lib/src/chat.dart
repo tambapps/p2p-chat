@@ -5,10 +5,10 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:meta/meta.dart';
-import 'package:p2p_chat_core/p2p_chat_core.dart';
-import 'package:p2p_chat_core/src/util.dart';
+import 'util.dart';
 
 import 'chat_automation.dart';
+import 'chat_discovery.dart';
 import 'io.dart';
 import 'model.dart';
 
@@ -47,7 +47,7 @@ typedef MessageCallback = void Function(Message message);
 
 // TODO create a DOJO (POJO for dart) for user data (username)
 /// return false if user should be filtered
-typedef ConnectionCallback = bool Function(Chat chat, HandshakeData data);
+typedef ConnectionCallback = bool Function(Chat chat, UserData data);
 
 // TODO handle server errors
 class ChatServer extends Chat {
@@ -67,17 +67,19 @@ class ChatServer extends Chat {
   @override
   int get port => server.server.port;
 
-  ChatServer(this.server, this.onMessageReceived, {this.onNewSocket, this.userData = const UserData('anonymous')});
+  ChatPeer get chatPeer => ChatPeer.from(address, PeerType.SERVER, port, userData);
+
+  ChatServer(this.server, this.onMessageReceived, {this.onNewSocket, this.userData = ANONYMOUS_USER});
 
   static Future<ChatServer> from(address, MessageCallback onMessageReceived,
-      {ConnectionCallback? onNewSocket}) async {
+      {ConnectionCallback? onNewSocket, UserData userData = ANONYMOUS_USER}) async {
     final server = await WebsocketServer.from(await toAddress(address), ChatServer.PORT);
-    return ChatServer(server, onMessageReceived, onNewSocket: onNewSocket);
+    return ChatServer(server, onMessageReceived, onNewSocket: onNewSocket, userData: userData);
   }
 
   StreamSubscription<HttpRequest> start() {
     return server.listen((socket) {
-      final automaton = ChatServerAutomaton(onNewSocket ?? (chat, data) => true, onMessageReceived);
+      final automaton = ChatServerAutomaton(onMessageReceived, onNewSocket ?? (chat, data) => true);
       socket.listen((bytes) => automaton.act(this, bytes));
       sockets.add(socket);
     });
@@ -114,13 +116,13 @@ class ChatClient extends Chat {
 
   /// [address] must be the String address, or the InternetAddress
   static Future<ChatClient> from(addressArg,
-      MessageCallback onMessageReceived, {Function? onError}) async {
+      MessageCallback onMessageReceived, {Function? onError, UserData userData = ANONYMOUS_USER}) async {
     var address = await toAddress(addressArg);
     final socket = await WebSocket.connect('ws://${address.address}:${ChatServer.PORT}');
-    return ChatClient(socket, onMessageReceived, onError: onError);
+    return ChatClient(socket, onMessageReceived, onError: onError, userData: userData);
   }
 
-  ChatClient(this.socket, MessageCallback onMessageReceived, {Function? onError, this.userData = const UserData('anonymous')}) {
+  ChatClient(this.socket, MessageCallback onMessageReceived, {Function? onError, this.userData = ANONYMOUS_USER}) {
     final automaton = ChatClientAutomaton(onMessageReceived);
     // sending handshake data
     socket.add(jsonEncode(HandshakeData(userData)).codeUnits);
@@ -177,7 +179,7 @@ class SmartChat extends Chat {
       listener.listen(_listenChatPeers);
     }
     multicaster.chatPeers = [
-      ChatPeer(chatServer.address.address, peerType, chatServer.port)
+      ChatPeer(chatServer.address.address, peerType, chatServer.port, userData)
     ];
     multicaster.start();
   }
@@ -194,7 +196,7 @@ class SmartChat extends Chat {
         // TODO rethink what data should be passed for onNewSocket (maybe user data?)
         // calling onNewSocket to let the handler of smart chat that a connection has been
         // made
-        chatServer.onNewSocket?.call(chat, 'something');
+        chatServer.onNewSocket?.call(chat, chatPeer.userData);
       }
     }
   }

@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:html';
 import 'dart:typed_data';
 
 import 'package:meta/meta.dart';
@@ -47,7 +46,7 @@ class ChatServerAutomaton extends _ChatAutomaton<ChatServer> {
         // TODO do handshake and stuff
         //   add optional key password
         // there should be security checks later, to control who can access a chat or not
-        onNewSocket(chat, handshakeData);
+        onNewSocket(chat, handshakeData.userData);
         state = CONNECTED;
         break;
     }

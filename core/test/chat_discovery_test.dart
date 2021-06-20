@@ -15,8 +15,8 @@ void main() {
     test('Test multicast Test', () async {
       var multicaster = await ChatPeerMulticaster.newInstance();
       multicaster.chatPeers = [
-        ChatPeer.from(InternetAddress.loopbackIPv4, PeerType.ANY, PEER_DISCOVERY_PORT),
-        ChatPeer.from(InternetAddress.loopbackIPv4, PeerType.SERVER, PEER_DISCOVERY_PORT)
+        ChatPeer.from(InternetAddress.loopbackIPv4, PeerType.ANY, PEER_DISCOVERY_PORT, UserData('sisi')),
+        ChatPeer.from(InternetAddress.loopbackIPv4, PeerType.SERVER, PEER_DISCOVERY_PORT, UserData('soso'))
       ];
 
       multicaster.start();

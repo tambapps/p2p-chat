@@ -22,6 +22,8 @@ class Message {
   Map<String, dynamic> toJson() => _$MessageToJson(this);
 
 }
+
+const ANONYMOUS_USER = UserData('anonymous');
 @JsonSerializable()
 class UserData {
   final String username;
@@ -53,18 +55,21 @@ class Peer {
 
 }
 
-// TODO remove client
 enum PeerType {
-  SERVER, CLIENT, ANY
+  SERVER, ANY
 }
 
 @JsonSerializable()
 class ChatPeer {
 
+  ChatPeer.from(InternetAddress address, PeerType type, int port, UserData userData) : this(address.address, type, port, userData);
+
+  ChatPeer(this.address, this.type, this.port, this.userData);
+
   final String address;
   final PeerType type;
   final int? port;
-
+  final UserData userData;
 
   @override
   bool operator ==(Object other) =>
@@ -81,9 +86,6 @@ class ChatPeer {
   factory ChatPeer.fromJson(Map<String, dynamic> json) => _$ChatPeerFromJson(json);
 
   Map<String, dynamic> toJson() => _$ChatPeerToJson(this);
-
-  ChatPeer.from(InternetAddress address, PeerType type, int port) : this(address.address, type, port);
-  ChatPeer(this.address, this.type, this.port);
 
   InternetAddress get internetAddress {
     return InternetAddress(address);
