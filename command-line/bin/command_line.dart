@@ -57,7 +57,7 @@ Future<Chat> serverChat(MessageCallback messageCallback, InternetAddress address
 
 Future<Chat> smartChat(MessageCallback messageCallback, InternetAddress address, String username) async {
   print('Looking/waiting for another chat peer');
-  var chat = await SmartChat.from(address, messageCallback, onNewSocket: (chat, user) {
+  var chat = await SmartChat.from(address, messageCallback, userData: UserData(username), onNewSocket: (chat, user) {
     if (chat is ChatServer) {
       print('${user.username} connected to your chat!');
     } else {
