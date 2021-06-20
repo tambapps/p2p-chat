@@ -40,6 +40,7 @@ class Peer {
 
 }
 
+// TODO remove client
 enum PeerType {
   SERVER, CLIENT, ANY
 }

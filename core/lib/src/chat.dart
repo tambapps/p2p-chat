@@ -5,6 +5,7 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:meta/meta.dart';
+import 'package:p2p_chat_core/p2p_chat_core.dart';
 import 'package:p2p_chat_core/src/util.dart';
 
 import 'io.dart';
@@ -38,6 +39,7 @@ abstract class Chat {
 
   UserData get userData;
   InternetAddress get address;
+  int get port;
 }
 
 typedef MessageCallback = void Function(Message message);
@@ -59,6 +61,10 @@ class ChatServer extends Chat {
   final List<WebSocket> sockets = [];
   @override
   UserData userData;
+  @override
+  InternetAddress get address => server.server.address;
+  @override
+  int get port => server.server.port;
 
   ChatServer(this.server, this.onMessageReceived, {this.onNewSocket, this.userData = const UserData('anonymous')});
 
@@ -91,10 +97,6 @@ class ChatServer extends Chat {
     server.close(force: force);
   }
 
-  @override
-  InternetAddress get address {
-    return server.server.address;
-  }
 }
 
 class ChatClient extends Chat {
@@ -102,6 +104,15 @@ class ChatClient extends Chat {
   final WebSocket socket;
   @override
   UserData userData;
+
+  @override
+  InternetAddress get address {
+    // TODO replace this getter by get identifier, the server should give the client an identifier through handshake
+    return InternetAddress.loopbackIPv4;
+  }
+
+  @override
+  int get port => ChatServer.PORT;
 
   /// [address] must be the String address, or the InternetAddress
   static Future<ChatClient> from(addressArg,
@@ -124,10 +135,88 @@ class ChatClient extends Chat {
   void close() {
     socket.close();
   }
+}
+
+
+/// Chat that starts a server AND listen for chat peers
+/// if a chat peer is found, the chat server is stopped
+/// if a connection is made under the server, it stops listening for chat peers
+class SmartChat extends Chat {
+
+  final PeerType peerType;
+  final MessageCallback onMessageReceived;
+  final ChatServer chatServer;
+  final ChatPeerMulticaster multicaster;
+  final ChatPeerListener listener;
+  Chat chat;
+
+  static Future<SmartChat> from(address, MessageCallback onMessageReceived,
+      {ConnectionCallback? onNewSocket, PeerType peerType = PeerType.ANY}) async {
+    final multicaster = await ChatPeerMulticaster.newInstance();
+    final listener = await ChatPeerListener.newInstance();
+    final server = await ChatServer.from(address, onMessageReceived, onNewSocket: (chat, data) {
+      if (onNewSocket == null || onNewSocket(chat, data)) {
+        multicaster.close();
+        listener.close();
+        return true;
+      }
+      return false;
+    });
+
+    // the chat is the server by default, if it will be overriden by a client chat
+    // if one chat peer is found
+    return SmartChat(peerType, onMessageReceived, server, server, multicaster, listener);
+  }
+
+  SmartChat(this.peerType, this.onMessageReceived, this.chatServer, this.chat, this.multicaster, this.listener);
+
+  void start() {
+    chatServer.start();
+    if (peerType != PeerType.SERVER) {
+      listener.listen(_listenChatPeers);
+    }
+    multicaster.chatPeers = [
+      ChatPeer(chatServer.address.address, peerType, chatServer.port)
+    ];
+    multicaster.start();
+  }
+
+  void _listenChatPeers(List<ChatPeer> chatPeers) async {
+    chat = await ChatClient.from(chatPeers[0], onMessageReceived);
+    chatServer.close();
+    multicaster.close();
+    listener.close();
+  }
 
   @override
-  InternetAddress get address {
-    // TODO replace this getter by get identifier, the server should give the client an identifier through handshake
-    return InternetAddress.loopbackIPv4;
+  InternetAddress get address => chat.address;
+
+  @override
+  void close() {
+    chatServer.close();
+    chat.close();
+    multicaster.close();
+    listener.close();
   }
+
+  @override
+  void sendData(data) {
+    chat.sendData(data);
+  }
+
+  @override
+  void sendMessage(Message message) {
+    chat.sendMessage(message);
+  }
+
+  @override
+  void sendText(String text) {
+    chat.sendText(text);
+  }
+  @override
+  UserData get userData => chat.userData;
+
+  @override
+  int get port => chat.port;
+
 }

@@ -16,7 +16,7 @@ void main() {
       var multicaster = await ChatPeerMulticaster.newInstance();
       multicaster.chatPeers = [
         ChatPeer.from(InternetAddress.loopbackIPv4, PeerType.ANY, PEER_DISCOVERY_PORT),
-        ChatPeer.from(InternetAddress.loopbackIPv4, PeerType.CLIENT, PEER_DISCOVERY_PORT)
+        ChatPeer.from(InternetAddress.loopbackIPv4, PeerType.SERVER, PEER_DISCOVERY_PORT)
       ];
 
       multicaster.start();
