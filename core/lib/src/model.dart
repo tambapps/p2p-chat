@@ -32,6 +32,19 @@ class UserData {
   Map<String, dynamic> toJson() => _$UserDataToJson(this);
 }
 
+@JsonSerializable()
+class HandshakeData {
+  final UserData userData;
+
+  HandshakeData(this.userData);
+
+  factory HandshakeData.fromJson(Map<String, dynamic> json) => _$HandshakeDataFromJson(json);
+
+  Map<String, dynamic> toJson() => _$HandshakeDataToJson(this);
+
+}
+
+
 class Peer {
   final InternetAddress address;
   final int port;

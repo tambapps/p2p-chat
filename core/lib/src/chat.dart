@@ -8,6 +8,7 @@ import 'package:meta/meta.dart';
 import 'package:p2p_chat_core/p2p_chat_core.dart';
 import 'package:p2p_chat_core/src/util.dart';
 
+import 'chat_automation.dart';
 import 'io.dart';
 import 'model.dart';
 
@@ -46,7 +47,7 @@ typedef MessageCallback = void Function(Message message);
 
 // TODO create a DOJO (POJO for dart) for user data (username)
 /// return false if user should be filtered
-typedef ConnectionCallback = bool Function(Chat chat, dynamic data);
+typedef ConnectionCallback = bool Function(Chat chat, HandshakeData data);
 
 // TODO handle server errors
 class ChatServer extends Chat {
@@ -76,12 +77,9 @@ class ChatServer extends Chat {
 
   StreamSubscription<HttpRequest> start() {
     return server.listen((socket) {
-      // TODO do handshake and stuff
-      //   add optional key password
-      if (onNewSocket == null || onNewSocket!.call(this, socket)) {
-        socket.listen((bytes) => onMessageReceived(toMessage(bytes)));
-        sockets.add(socket);
-      }
+      final automaton = ChatServerAutomaton(onNewSocket ?? (chat, data) => true, onMessageReceived);
+      socket.listen((bytes) => automaton.act(this, bytes));
+      sockets.add(socket);
     });
   }
 
@@ -123,7 +121,10 @@ class ChatClient extends Chat {
   }
 
   ChatClient(this.socket, MessageCallback onMessageReceived, {Function? onError, this.userData = const UserData('anonymous')}) {
-    socket.listen((bytes) => onMessageReceived(toMessage(bytes)), onError: onError);
+    final automaton = ChatClientAutomaton(onMessageReceived);
+    // sending handshake data
+    socket.add(jsonEncode(HandshakeData(userData)).codeUnits);
+    socket.listen((bytes) => automaton.act(this, bytes), onError: onError);
   }
 
   @override
