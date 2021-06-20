@@ -16,11 +16,11 @@ void main(List<String> arguments) async {
   var callback = (Message message) => print('${message.userData.username} at ${message.sentAt.hour}:${message.sentAt.second}:\n${message.text}');
 
   if (argResults[SERVER_ARG]) {
-    chat = await serverChat(callback, argResults[ADDRESS_ARG] ?? await getDesktopIpAddress());
+    chat = await serverChat(callback, argResults[ADDRESS_ARG] != null ? await toAddress(argResults[ADDRESS_ARG]) : await getDesktopIpAddress());
   } else if (argResults[WITH_ARG] != null) {
-    chat = await clientChat(callback, argResults[WITH_ARG]);
+    chat = await clientChat(callback, await toAddress(argResults[WITH_ARG]));
   } else {
-    chat = await smartChat(callback, argResults[ADDRESS_ARG] ?? await getDesktopIpAddress());;
+    chat = await smartChat(callback, argResults[ADDRESS_ARG] != null ? await toAddress(argResults[ADDRESS_ARG]) : await getDesktopIpAddress());
   }
 
   // dart is single threaded. If I would have processed the lines synchronously (e.g with stdin.readLineSync())
@@ -30,7 +30,7 @@ void main(List<String> arguments) async {
   });
 }
 
-Future<Chat> clientChat(MessageCallback messageCallback, String address) async {
+Future<Chat> clientChat(MessageCallback messageCallback, InternetAddress address) async {
   print('Connecting to $address');
   var chat = await ChatClient.from(address, messageCallback);
   print('Connected successfully');
@@ -38,7 +38,7 @@ Future<Chat> clientChat(MessageCallback messageCallback, String address) async {
   return chat;
 }
 
-Future<Chat> serverChat(MessageCallback messageCallback, address) async {
+Future<Chat> serverChat(MessageCallback messageCallback, InternetAddress address) async {
   var chatServer = await ChatServer.from(address, messageCallback,
       onNewSocket: (chat, user) {
         print('$user connected!');
@@ -50,46 +50,20 @@ Future<Chat> serverChat(MessageCallback messageCallback, address) async {
   await multicast(ChatPeer.from(address, PeerType.SERVER, ChatServer.PORT));
   return chatServer;
 }
-Future<Chat> smartChat(MessageCallback messageCallback, address) async {
-  // this part is a little tricky
-  // I want this method to be blocking until a chat is found, whether it is from
-  // the server or from a discovered chat peer
-  // I first wanted to use a Stream<Chat> and then wait for the first element but
-  // we can't yield a value from callbacks. So instead I used a periodic stream
-  // that will check each seconds if a chat has been started, from the chatRef
-  // server
-  final chatRef = <Chat?>[null];
-  var chatServer = await ChatServer.from(address, messageCallback,
-      onNewSocket: (chat, user) {
-        print('$user connected!');
-        print("Tap text and press 'Enter' to send a message");
-        chatRef[0] = chat;
-        return true;
-  });
 
-  chatServer.start();
-  var multicaster = await multicast(ChatPeer.from(address, PeerType.SERVER, ChatServer.PORT));
-  // client listening for other servers
-
-  var chatPeerListener = await ChatPeerListener.newInstance();
-  chatPeerListener.listen((chatPeers) async {
-    var chat = await ChatClient.from(address, messageCallback);
-    chatRef[0] = chat;
-    print('Connected successfully');
+Future<Chat> smartChat(MessageCallback messageCallback, InternetAddress address) async {
+  print('Looking/waiting for another chat peer');
+  var chat = await SmartChat.from(address, messageCallback, onNewSocket: (chat, user) {
+    if (chat is ChatServer) {
+      print('$user connected to your chat!');
+    } else {
+      print("Connected to $user's chat!");
+    }
     print("Tap text and press 'Enter' to send a message");
+    return true;
   });
-
-  return Stream.periodic(Duration(seconds: 1), (computationCount) => chatRef[0])
-      .where((nullableChat) => nullableChat != null)
-      .map((chat) {
-        if (chat != chatServer) {
-          chatServer.close();
-        }
-        multicaster.close();
-        chatPeerListener.close();
-        return chat as Chat;
-      })
-      .first;
+  chat.start();
+  return chat;
 }
 
 Future<ChatPeerMulticaster> multicast(ChatPeer chatPeer) async {
