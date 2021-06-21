@@ -9,14 +9,13 @@ const ADDRESS_ARG = 'address';
 const WITH_ARG = 'with';
 const USERNAME_ARG = 'username';
 
-late Chat chat;
-
 void main(List<String> arguments) async {
   print('P2P Chat 0.0.1');
   var argResults = getArgs(arguments);
   var callback = (Message message) => print('${message.userData.username} at ${message.sentAt.hour}:${message.sentAt.second}:\n${message.text}');
   final username = argResults[USERNAME_ARG] ?? 'anonymous';
 
+  Chat chat;
   if (argResults[SERVER_ARG]) {
     chat = await serverChat(callback, argResults[ADDRESS_ARG] != null ? await toAddress(argResults[ADDRESS_ARG]) : await getDesktopIpAddress(), username);
   } else if (argResults[WITH_ARG] != null) {
