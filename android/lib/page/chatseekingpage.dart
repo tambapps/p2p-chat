@@ -1,7 +1,7 @@
 import 'dart:collection';
 
 import 'package:flutter/material.dart';
-import 'package:p2p_chat_android/page/chatpage.dart';
+import 'package:p2p_chat_android/page/chatserverpage.dart';
 import 'package:p2p_chat_core/p2p_chat_core.dart';
 
 
@@ -24,16 +24,17 @@ class _ChatSeekingPageState extends State<ChatSeekingPage> {
   @override
   void initState() {
     super.initState();
-    ChatPeerListener.newInstance().then((chatPeerListener) {
-      this.chatPeerListener = chatPeerListener;
-      chatPeerListener.listen(this._listen);
+
+  }
+
+  void startSmartChat() async {
+    var chat = await SmartChat.from(await getDesktopIpAddress(), (message) {
+      // TODO
+    }, userData: UserData('Android smartphone'), onNewSocket: (chat, user) {
+      // TODO start chat activity
+      return true;
     });
-    // TODO also start server
-    ChatPeerMulticaster.newInstance().then((multicaster) async {
-      this.multicaster = multicaster;
-      multicaster.chatPeers.add(ChatPeer.from(await getDesktopIpAddress(), PeerType.ANY, PEER_DISCOVERY_PORT));
-      multicaster.start();
-    });
+    chat.start();
   }
 
   void _listen(List<ChatPeer> chatPeers) {
@@ -63,7 +64,7 @@ class _ChatSeekingPageState extends State<ChatSeekingPage> {
           onPressed: () {
             Navigator.push(context,
                 // TODO
-                MaterialPageRoute(builder: (context) => ChatPage()));
+                MaterialPageRoute(builder: (context) => ChatServerPage()));
           },
         )
     ));

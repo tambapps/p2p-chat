@@ -4,14 +4,14 @@ import 'package:flutter/material.dart';
 import 'package:p2p_chat_core/p2p_chat_core.dart';
 
 
-class ChatPage extends StatefulWidget {
-  ChatPage({Key? key}) : super(key: key);
+class ChatServerPage extends StatefulWidget {
+  ChatServerPage({Key? key}) : super(key: key);
 
   @override
-  _ChatPageState createState() => _ChatPageState();
+  _ChatServerPageState createState() => _ChatServerPageState();
 }
 
-class _ChatPageState extends State<ChatPage> {
+class _ChatServerPageState extends State<ChatServerPage> {
 
   late final ChatServer chatServer;
 
