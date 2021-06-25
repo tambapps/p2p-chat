@@ -5,11 +5,12 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:meta/meta.dart';
+import 'package:p2p_chat_core/src/connection/connection.dart';
+import 'connection/websocket_connection.dart';
 import 'util.dart';
 
 import 'chat_automation.dart';
 import 'chat_discovery.dart';
-import 'io.dart';
 import 'model.dart';
 
 /// base class for a chat
@@ -45,7 +46,6 @@ abstract class Chat {
 
 typedef MessageCallback = void Function(Message message);
 
-// TODO create a DOJO (POJO for dart) for user data (username)
 /// return false if user should be filtered
 typedef ConnectionCallback = bool Function(Chat chat, UserData data);
 
@@ -56,16 +56,16 @@ class ChatServer extends Chat {
   // HTTP port. Required since we're using an Http Server for the Web Socket
   static const PORT = 8000;
 
-  final WebsocketServer server;
+  final ConnectionServer server;
   final MessageCallback onMessageReceived;
   final ConnectionCallback? onNewSocket;
-  final List<WebSocket> sockets = [];
+  final List<Connection> connections = [];
   @override
   UserData userData;
   @override
-  InternetAddress get address => server.server.address;
+  InternetAddress get address => server.address;
   @override
-  int get port => server.server.port;
+  int get port => server.port;
 
   ChatPeer get chatPeer => ChatPeer.from(address, PeerType.SERVER, port, userData);
 
@@ -73,70 +73,69 @@ class ChatServer extends Chat {
 
   static Future<ChatServer> from(address, MessageCallback onMessageReceived,
       {ConnectionCallback? onNewSocket, UserData userData = ANONYMOUS_USER}) async {
-    final server = await WebsocketServer.from(await toAddress(address), ChatServer.PORT);
+    final server = await WebSocketServer.from(await toAddress(address), ChatServer.PORT);
     return ChatServer(server, onMessageReceived, onNewSocket: onNewSocket, userData: userData);
   }
 
-  StreamSubscription<HttpRequest> start() {
-    return server.listen((socket) {
+  void start() {
+    server.listen((connection) {
       final automaton = ChatServerAutomaton(onMessageReceived, onNewSocket ?? (chat, data) => true);
-      socket.listen((bytes) => automaton.act(this, bytes));
-      sockets.add(socket);
+      connection.listen((bytes) => automaton.act(this, bytes));
+      connections.add(connection);
     });
   }
 
   @override
   void sendData(data) {
-    for (var client in sockets) {
-      client.add(data);
+    for (var client in connections) {
+      client.send(data);
     }
   }
 
   @override
   void close({bool force = false}) {
-    server.close(force: force);
+    server.close();
   }
 
 }
 
 class ChatClient extends Chat {
 
-  final WebSocket socket;
+  final Connection connection;
+  @override
+  InternetAddress get address => connection.address;
+  @override
+  int get port => connection.port;
+
   @override
   UserData userData;
-
-  @override
-  InternetAddress get address {
-    // TODO replace this getter by get identifier, the server should give the client an identifier through handshake
-    return InternetAddress.loopbackIPv4;
-  }
-
-  @override
-  int get port => ChatServer.PORT;
 
   /// [address] must be the String address, or the InternetAddress
   static Future<ChatClient> from(addressArg,
       MessageCallback onMessageReceived, {Function? onError, UserData userData = ANONYMOUS_USER}) async {
     var address = await toAddress(addressArg);
-    final socket = await WebSocket.connect('ws://${address.address}:${ChatServer.PORT}');
-    return ChatClient(socket, onMessageReceived, onError: onError, userData: userData);
+    var port = ChatServer.PORT;
+
+    final connection = await WebSocketConnection.from(address, port);
+    return ChatClient(connection, onMessageReceived, onError: onError, userData: userData);
   }
 
-  ChatClient(this.socket, MessageCallback onMessageReceived, {Function? onError, this.userData = ANONYMOUS_USER}) {
+  ChatClient(this.connection, MessageCallback onMessageReceived,
+      {Function? onError, this.userData = ANONYMOUS_USER}) {
     final automaton = ChatClientAutomaton(onMessageReceived);
     // sending handshake data
-    socket.add(jsonEncode(HandshakeData(userData)).codeUnits);
-    socket.listen((bytes) => automaton.act(this, bytes), onError: onError);
+    connection.sendText(jsonEncode(HandshakeData(userData)));
+    connection.listen((bytes) => automaton.act(this, bytes), onError: onError);
   }
 
   @override
   void sendData(data) {
-    socket.add(data);
+    connection.send(data);
   }
 
   @override
   void close() {
-    socket.close();
+    connection.close();
   }
 }
 
