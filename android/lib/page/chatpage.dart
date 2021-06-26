@@ -1,59 +1,36 @@
-import 'dart:collection';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:p2p_chat_android/page/chatpage.dart';
-import 'package:p2p_chat_android/page/chatserverpage.dart';
 import 'package:p2p_chat_core/p2p_chat_core.dart';
 
 
-class ChatSeekingPage extends StatefulWidget {
-  ChatSeekingPage({Key? key}) : super(key: key);
+class ChatPage extends StatefulWidget {
+  final ChatClient chat;
+  ChatPage(this.chat, {Key? key}) : super(key: key);
 
   @override
-  _ChatSeekingPageState createState() => _ChatSeekingPageState();
+  _ChatPageState createState() => _ChatPageState(chat);
 }
 
-class _ChatSeekingPageState extends State<ChatSeekingPage> {
 
-  Set<ChatPeer> peers = HashSet();
+class _ChatPageState extends State<ChatPage> {
 
-  late ChatPeerListener chatPeerListener;
+  final ChatClient chat;
 
-  // will later be optional. Thats why it's nullable
-  ChatPeerMulticaster? multicaster;
+  _ChatPageState(this.chat);
+
+  List<Message> messages = [];
 
   @override
   void initState() {
     super.initState();
-    startSmartChat();
+    chat.setMessageCallback(this.onNewMessage);
   }
 
-  void startSmartChat() async {
-    var chat = await SmartChat.from(await getDesktopIpAddress(), (message) {
-      // TODO
-    }, userData: UserData('Android smartphone'), onNewSocket: (chat, user) {
-      if (chat is ChatServer) {
-        Navigator.push(context,
-            MaterialPageRoute(builder: (context) => ChatServerPage(chatServer: chat,)));
-      } else {
-        Navigator.push(context,
-            MaterialPageRoute(builder: (context) => ChatPage(chat as ChatClient,)));
-      }
-      return true;
+  void onNewMessage(Message message) {
+    setState(() {
+      this.messages.add(message);
     });
-    chat.start();
-  }
-
-  void _listen(List<ChatPeer> chatPeers) {
-    print(chatPeers);
-    var peers = HashSet<ChatPeer>();
-    peers.addAll(this.peers);
-    peers.addAll(chatPeers);
-    if (this.peers != peers) {
-      setState(() {
-        this.peers = peers;
-      });
-    }
   }
 
   @override
@@ -65,16 +42,7 @@ class _ChatSeekingPageState extends State<ChatSeekingPage> {
     // fast, so that you can just rebuild anything that needs updating rather
     // than having to individually change instances of widgets.
     List<Widget> widgets = [];
-    widgets.addAll(peers.map((p) =>
-        ElevatedButton(
-          child: Text('${p.address}:${p.port}', style: Theme.of(context).textTheme.headline4),
-          onPressed: () {
-            Navigator.push(context,
-                // TODO
-                MaterialPageRoute(builder: (context) => ChatServerPage()));
-          },
-        )
-    ));
+    widgets.addAll(messages.map((m) => Text('${m.userData.username}: ${m.text}')));
     return Scaffold(
       body: Center(
         // Center is a layout widget. It takes a single child and positions it
@@ -99,12 +67,5 @@ class _ChatSeekingPageState extends State<ChatSeekingPage> {
         ),
       ), // This trailing comma makes auto-formatting nicer for build methods.
     );
-  }
-
-  @override
-  void dispose() {
-    chatPeerListener.close();
-    this.multicaster?.close();
-    super.dispose();
   }
 }

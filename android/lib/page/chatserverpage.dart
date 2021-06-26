@@ -5,24 +5,30 @@ import 'package:p2p_chat_core/p2p_chat_core.dart';
 
 
 class ChatServerPage extends StatefulWidget {
-  ChatServerPage({Key? key}) : super(key: key);
+
+  final ChatServer? chatServer;
+
+  // optional chatServer. If not provided, one will be created in this page
+  ChatServerPage({Key? key, this.chatServer}) : super(key: key);
 
   @override
-  _ChatServerPageState createState() => _ChatServerPageState();
+  _ChatServerPageState createState() => _ChatServerPageState(chatServer);
 }
 
 class _ChatServerPageState extends State<ChatServerPage> {
 
-  late final ChatServer chatServer;
-
+  ChatServer? chatServer;
   InternetAddress? address;
-
   List<Message> messages = [];
+
+  _ChatServerPageState(this.chatServer);
 
   @override
   void initState() {
     super.initState();
-    startChatServer();
+    if (chatServer == null) {
+      startChatServer();
+    }
   }
 
   Future<void> startChatServer() async {
@@ -33,10 +39,10 @@ class _ChatServerPageState extends State<ChatServerPage> {
       });
     });
 
-    chatServer.start();
+    chatServer!.start();
 
     setState(() {
-      this.address = chatServer.address;
+      this.address = chatServer!.address;
     });
 
   }
