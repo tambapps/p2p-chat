@@ -37,6 +37,8 @@ abstract class Chat {
     return Message.fromJson(jsonDecode(String.fromCharCodes(data)));
   }
 
+  void setMessageCallback(MessageCallback messageCallback);
+
   void close();
 
   UserData get userData;
@@ -97,11 +99,17 @@ class ChatServer extends Chat {
     server.close();
   }
 
+  @override
+  void setMessageCallback(MessageCallback messageCallback) {
+    // TODO
+  }
+
 }
 
 class ChatClient extends Chat {
 
   final Connection connection;
+  late final ChatClientAutomaton automaton;
   @override
   InternetAddress get address => connection.address;
   @override
@@ -122,7 +130,7 @@ class ChatClient extends Chat {
 
   ChatClient(this.connection, MessageCallback onMessageReceived,
       {Function? onError, this.userData = ANONYMOUS_USER}) {
-    final automaton = ChatClientAutomaton(onMessageReceived);
+    automaton = ChatClientAutomaton(onMessageReceived);
     // sending handshake data
     connection.sendText(jsonEncode(HandshakeData(userData)));
     connection.listen((bytes) => automaton.act(this, bytes), onError: onError);
@@ -136,6 +144,11 @@ class ChatClient extends Chat {
   @override
   void close() {
     connection.close();
+  }
+
+  @override
+  void setMessageCallback(MessageCallback messageCallback) {
+    automaton.onMessageReceived = messageCallback;
   }
 }
 
@@ -188,7 +201,7 @@ class SmartChat extends Chat {
       if (chatPeer.type == PeerType.ANY && this.peerType == PeerType.ANY) {
         // TODO find a way to determine which should be the server
       } else {
-        chat = await ChatClient.from(chatPeers[0], onMessageReceived, userData: chatServer.userData);
+        chat = await ChatClient.from(chatPeers[0].internetAddress, onMessageReceived, userData: chatServer.userData);
         chatServer.close();
         multicaster.close();
         listener.close();
@@ -231,4 +244,8 @@ class SmartChat extends Chat {
   @override
   int get port => chat.port;
 
+  @override
+  void setMessageCallback(MessageCallback messageCallback) {
+    // TODO: implement setMessageCallback
+  }
 }

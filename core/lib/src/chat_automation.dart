@@ -10,16 +10,16 @@ const NEW_CONNECTION = 0;
 const CONNECTED = 1;
 
 abstract class _ChatAutomaton<T extends Chat> {
-  final MessageCallback _onMessageReceived;
+  MessageCallback onMessageReceived;
   @protected
   int state = NEW_CONNECTION;
 
-  _ChatAutomaton(this._onMessageReceived);
+  _ChatAutomaton(this.onMessageReceived);
 
   void act(T chat, Uint8List data) {
     switch (state) {
       case CONNECTED:
-        _onMessageReceived(Message.fromJson(jsonDecode(String.fromCharCodes(data))));
+        onMessageReceived(Message.fromJson(jsonDecode(String.fromCharCodes(data))));
         break;
       default:
         doAct(chat, data);
