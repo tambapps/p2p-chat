@@ -1,10 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:p2p_chat_core/p2p_chat_core.dart';
 
 import '../../constants.dart';
 
 class ChatInputField extends StatelessWidget {
-  const ChatInputField({
+
+  final controller = TextEditingController();
+  final Function(String) onSendClick;
+
+  ChatInputField({
     Key? key,
+    required this.onSendClick,
   }) : super(key: key);
 
   @override
@@ -40,17 +46,10 @@ class ChatInputField extends StatelessWidget {
                 ),
                 child: Row(
                   children: [
-                    Icon(
-                      Icons.sentiment_satisfied_alt_outlined,
-                      color: Theme.of(context)
-                          .textTheme
-                          .bodyText1!
-                          .color!
-                          .withOpacity(0.64),
-                    ),
                     SizedBox(width: kDefaultPadding / 4),
                     Expanded(
                       child: TextField(
+                        controller: controller,
                         decoration: InputDecoration(
                           hintText: "Type message",
                           border: InputBorder.none,
@@ -66,14 +65,15 @@ class ChatInputField extends StatelessWidget {
                           .withOpacity(0.64),
                     ),
                     SizedBox(width: kDefaultPadding / 4),
-                    Icon(
-                      Icons.camera_alt_outlined,
-                      color: Theme.of(context)
-                          .textTheme
-                          .bodyText1!
-                          .color!
-                          .withOpacity(0.64),
-                    ),
+                    IconButton(onPressed: this.sendMessage,
+                        icon: Icon(
+                          Icons.camera_alt_outlined,
+                          color: Theme.of(context)
+                              .textTheme
+                              .bodyText1!
+                              .color!
+                              .withOpacity(0.64),
+                        )),
                   ],
                 ),
               ),
@@ -82,5 +82,13 @@ class ChatInputField extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  void sendMessage() {
+    final text = controller.text;
+    if (text.isNotEmpty) {
+      onSendClick(text);
+      controller.text = "";
+    }
   }
 }

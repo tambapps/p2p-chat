@@ -50,12 +50,16 @@ class _ChatPageState extends State<ChatPage> {
               ),
             ),
           ),
-          ChatInputField(),
+          ChatInputField(onSendClick: this.sendText),
         ],
       ),
     );
   }
 
+  void sendText(String text) {
+    final message = chat.sendText(text);
+    onNewMessage(message);
+  }
   AppBar buildAppBar() {
     return AppBar(
       automaticallyImplyLeading: false,

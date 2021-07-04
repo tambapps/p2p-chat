@@ -17,8 +17,10 @@ import 'model.dart';
 abstract class Chat {
 
   /// Sends the [text] message to the other peer
-  void sendText(String text) {
-    sendMessage(Message(address.address, userData, text, DateTime.now()));
+  Message sendText(String text) {
+    final message = Message(address.address, userData, text, DateTime.now());
+    sendMessage(message);
+    return message;
   }
 
   /// Sends the [message] to the other peer
@@ -235,8 +237,8 @@ class SmartChat extends Chat {
   }
 
   @override
-  void sendText(String text) {
-    chat.sendText(text);
+  Message sendText(String text) {
+    return chat.sendText(text);
   }
   @override
   UserData get userData => chat.userData;
