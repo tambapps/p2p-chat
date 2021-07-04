@@ -205,10 +205,6 @@ class SmartChat extends Chat {
         final ownAddress = chatServer.address.address;
         final peerAddress = chatPeer.address;
 
-        print(ownAddress);
-        print(ownAddress.hashCode);
-        print(peerAddress);
-        print(peerAddress.hashCode);
         if (ownAddress.hashCode < peerAddress.hashCode) {
           if (await _connectTo(chatPeer)) {
             break;
