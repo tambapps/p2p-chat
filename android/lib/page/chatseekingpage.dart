@@ -30,7 +30,6 @@ class _ChatSeekingPageState extends State<ChatSeekingPage> {
 
   void startSmartChat() async {
     var chat = await SmartChat.from(await getDesktopIpAddress(), (message) {
-      // TODO
     }, userData: UserData('Android smartphone'), onNewSocket: (chat, user) {
       if (chat is ChatServer) {
         Navigator.push(context,

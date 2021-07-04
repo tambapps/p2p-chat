@@ -201,17 +201,41 @@ class SmartChat extends Chat {
   void _listenChatPeers(List<ChatPeer> chatPeers) async {
     for (var chatPeer in chatPeers) {
       if (chatPeer.type == PeerType.ANY && this.peerType == PeerType.ANY) {
-        // TODO find a way to determine which should be the server
+        // these are Strings
+        final ownAddress = chatServer.address.address;
+        final peerAddress = chatPeer.address;
+
+        print(ownAddress);
+        print(ownAddress.hashCode);
+        print(peerAddress);
+        print(peerAddress.hashCode);
+        if (ownAddress.hashCode < peerAddress.hashCode) {
+          if (await _connectTo(chatPeer)) {
+            break;
+          }
+        } else {
+          // do nothing, the other peer will connect to me
+        }
+        break;
       } else {
-        chat = await ChatClient.from(chatPeers[0].internetAddress, onMessageReceived, userData: chatServer.userData);
-        chatServer.close();
-        multicaster.close();
-        listener.close();
-        // TODO rethink what data should be passed for onNewSocket (maybe user data?)
-        // calling onNewSocket to let the handler of smart chat that a connection has been
-        // made
-        chatServer.onNewSocket?.call(chat, chatPeer.userData);
+        if (await _connectTo(chatPeer)) {
+          break;
+        }
       }
+    }
+  }
+
+  Future<bool> _connectTo(ChatPeer chatPeer) async {
+    Chat chat = await ChatClient.from(chatPeer.internetAddress, onMessageReceived, userData: chatServer.userData);
+    if (chatServer.onNewSocket?.call(chat, chatPeer.userData) ?? true) {
+      this.chat = chat;
+      chatServer.close();
+      multicaster.close();
+      listener.close();
+      return true;
+    } else {
+      chat.close();
+      return false;
     }
   }
 
