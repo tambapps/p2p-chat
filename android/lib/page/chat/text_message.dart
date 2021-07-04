@@ -15,9 +15,6 @@ class TextMessage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    print(userData.username);
-    print(message.userData.username);
-    print(message.userData == userData);
     return Container(
       /*
       color: MediaQuery.of(context).platformBrightness == Brightness.dark
