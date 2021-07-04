@@ -1,12 +1,13 @@
 import 'dart:async';
 import 'dart:io';
 import 'dart:typed_data';
-
+import '../chat_automation.dart';
 
 abstract class Connection {
 
   InternetAddress get address;
   int get port;
+  late ChatAutomaton automaton;
 
   void send(data);
 

@@ -2,7 +2,6 @@ import 'dart:collection';
 
 import 'package:flutter/material.dart';
 import 'package:p2p_chat_android/page/chat/chatpage.dart';
-import 'package:p2p_chat_android/page/chatserverpage.dart';
 import 'package:p2p_chat_core/p2p_chat_core.dart';
 
 

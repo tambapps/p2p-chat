@@ -13,20 +13,25 @@ class ChatPage extends StatefulWidget {
   _ChatPageState createState() => _ChatPageState(chat);
 }
 
+class _ChatPageState extends AbstractChatPageState<ChatPage> {
 
-class _ChatPageState extends State<ChatPage> {
-
+  @override
   final ChatClient chat;
 
   _ChatPageState(this.chat);
-
-  List<Message> messages = [];
 
   @override
   void initState() {
     super.initState();
     chat.setMessageCallback(this.onNewMessage);
   }
+
+}
+
+abstract class AbstractChatPageState<T extends StatefulWidget> extends State<T> {
+
+  List<Message> messages = [];
+  Chat? get chat;
 
   void onNewMessage(Message message) {
     setState(() {
@@ -57,9 +62,13 @@ class _ChatPageState extends State<ChatPage> {
   }
 
   void sendText(String text) {
-    final message = chat.sendText(text);
+    if (chat == null) {
+      return;
+    }
+    final message = chat!.sendText(text);
     onNewMessage(message);
   }
+
   AppBar buildAppBar() {
     return AppBar(
       automaticallyImplyLeading: false,
@@ -75,7 +84,7 @@ class _ChatPageState extends State<ChatPage> {
                 style: TextStyle(fontSize: 16),
               ),
               Text(
-                "Active 3m ago",
+                chat is ChatServer ? 'server' : 'client',
                 style: TextStyle(fontSize: 12),
               )
             ],
@@ -94,5 +103,49 @@ class _ChatPageState extends State<ChatPage> {
         SizedBox(width: kDefaultPadding / 2),
       ],
     );
+  }
+  @override
+  void dispose() {
+    chat?.close();
+    super.dispose();
+  }
+}
+
+
+
+class ChatServerPage extends StatefulWidget {
+
+  final ChatServer? chatServer;
+
+  // optional chatServer. If not provided, one will be created in this page
+  ChatServerPage({Key? key, this.chatServer}) : super(key: key);
+
+  @override
+  _ChatServerPageState createState() => _ChatServerPageState(chatServer);
+}
+
+class _ChatServerPageState extends AbstractChatPageState<ChatServerPage> {
+
+  ChatServer? chatServer;
+  @override
+  Chat? get chat => chatServer;
+
+  _ChatServerPageState(this.chatServer);
+
+  @override
+  void initState() {
+    super.initState();
+    if (chatServer == null) {
+      startChatServer();
+    } else {
+      chatServer!.setMessageCallback(this.onNewMessage);
+    }
+  }
+
+  Future<void> startChatServer() async {
+    var address = await getDesktopIpAddress();
+    chatServer = await ChatServer.from(address, this.onNewMessage);
+
+    chatServer!.start();
   }
 }

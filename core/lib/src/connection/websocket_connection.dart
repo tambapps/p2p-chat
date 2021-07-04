@@ -2,6 +2,8 @@ import 'dart:async';
 import 'dart:io';
 import 'dart:typed_data';
 
+import 'package:p2p_chat_core/src/chat.dart';
+import 'package:p2p_chat_core/src/chat_automation.dart';
 import 'package:p2p_chat_core/src/connection/connection.dart';
 
 class WebSocketConnection implements Connection {
@@ -10,6 +12,8 @@ class WebSocketConnection implements Connection {
   @override
   final int port;
   final WebSocket _webSocket;
+  @override
+  late ChatAutomaton<Chat> automaton;
 
   static Future<WebSocketConnection> from(InternetAddress address, int port) async {
     return WebSocketConnection(address, port, await WebSocket.connect('ws://${address.address}:$port'));

@@ -9,12 +9,14 @@ import 'model.dart';
 const NEW_CONNECTION = 0;
 const CONNECTED = 1;
 
-abstract class _ChatAutomaton<T extends Chat> {
+abstract class ChatAutomaton<T extends Chat> {
   MessageCallback onMessageReceived;
   @protected
-  int state = NEW_CONNECTION;
+  int state;
 
-  _ChatAutomaton(this.onMessageReceived);
+  ChatAutomaton(this.onMessageReceived, {
+    this.state = NEW_CONNECTION
+  });
 
   void act(T chat, Uint8List data) {
     switch (state) {
@@ -31,9 +33,9 @@ abstract class _ChatAutomaton<T extends Chat> {
   }
 }
 
-class ChatServerAutomaton extends _ChatAutomaton<ChatServer> {
+class ChatServerAutomaton extends ChatAutomaton<ChatServer> {
   
-  final ConnectionCallback onNewSocket;
+  final ChatConnectionCallback onNewSocket;
 
   ChatServerAutomaton(MessageCallback onMessageReceived, this.onNewSocket) : super(onMessageReceived);
 
@@ -54,7 +56,7 @@ class ChatServerAutomaton extends _ChatAutomaton<ChatServer> {
 
 }
 
-class ChatClientAutomaton extends _ChatAutomaton<ChatClient> {
+class ChatClientAutomaton extends ChatAutomaton<ChatClient> {
 
   @override
   int state = CONNECTED;

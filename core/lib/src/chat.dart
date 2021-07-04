@@ -51,7 +51,7 @@ abstract class Chat {
 typedef MessageCallback = void Function(Message message);
 
 /// return false if user should be filtered
-typedef ConnectionCallback = bool Function(Chat chat, UserData data);
+typedef ChatConnectionCallback = bool Function(Chat chat, UserData data);
 
 // TODO handle server errors
 class ChatServer extends Chat {
@@ -62,7 +62,7 @@ class ChatServer extends Chat {
 
   final ConnectionServer server;
   final MessageCallback onMessageReceived;
-  final ConnectionCallback? onNewSocket;
+  final ChatConnectionCallback? onNewSocket;
   final List<Connection> connections = [];
   @override
   UserData userData;
@@ -76,15 +76,15 @@ class ChatServer extends Chat {
   ChatServer(this.server, this.onMessageReceived, {this.onNewSocket, this.userData = ANONYMOUS_USER});
 
   static Future<ChatServer> from(address, MessageCallback onMessageReceived,
-      {ConnectionCallback? onNewSocket, UserData userData = ANONYMOUS_USER}) async {
+      {ChatConnectionCallback? onNewSocket, UserData userData = ANONYMOUS_USER}) async {
     final server = await WebSocketServer.from(await toAddress(address), ChatServer.PORT);
     return ChatServer(server, onMessageReceived, onNewSocket: onNewSocket, userData: userData);
   }
 
   void start() {
-    server.listen((connection) {
-      final automaton = ChatServerAutomaton(onMessageReceived, onNewSocket ?? (chat, data) => true);
-      connection.listen((bytes) => automaton.act(this, bytes));
+    server.listen((final connection) {
+      connection.automaton = ChatServerAutomaton(onMessageReceived, onNewSocket ?? (chat, data) => true);
+      connection.listen((bytes) => connection.automaton.act(this, bytes));
       connections.add(connection);
     });
   }
@@ -103,7 +103,9 @@ class ChatServer extends Chat {
 
   @override
   void setMessageCallback(MessageCallback messageCallback) {
-    // TODO
+    for (var client in connections) {
+      client.automaton.onMessageReceived = messageCallback;
+    }
   }
 
 }
@@ -168,7 +170,7 @@ class SmartChat extends Chat {
   Chat chat;
 
   static Future<SmartChat> from(address, MessageCallback onMessageReceived,
-      {ConnectionCallback? onNewSocket, PeerType peerType = PeerType.ANY, UserData userData = ANONYMOUS_USER}) async {
+      {ChatConnectionCallback? onNewSocket, PeerType peerType = PeerType.ANY, UserData userData = ANONYMOUS_USER}) async {
     final multicaster = await ChatPeerMulticaster.newInstance();
     final listener = await ChatPeerListener.newInstance();
     final server = await ChatServer.from(address, onMessageReceived, userData: userData, onNewSocket: (chat, data) {
@@ -268,6 +270,6 @@ class SmartChat extends Chat {
 
   @override
   void setMessageCallback(MessageCallback messageCallback) {
-    // TODO: implement setMessageCallback
+    chat.setMessageCallback(messageCallback);
   }
 }
