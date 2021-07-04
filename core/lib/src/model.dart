@@ -23,11 +23,12 @@ class Message {
 
 }
 
-const ANONYMOUS_USER = UserData('anonymous');
+const ANONYMOUS_USER = UserData('anonymous', 'anonymous');
 @JsonSerializable()
 class UserData {
   final String username;
-  const UserData(this.username);
+  final String id;
+  const UserData(this.id, this.username);
 
   factory UserData.fromJson(Map<String, dynamic> json) => _$UserDataFromJson(json);
 
@@ -38,7 +39,7 @@ class UserData {
       identical(this, other) ||
           other is UserData &&
               runtimeType == other.runtimeType &&
-              username == other.username;
+              id == other.id;
 }
 
 @JsonSerializable()

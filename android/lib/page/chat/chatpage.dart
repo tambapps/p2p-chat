@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:p2p_chat_android/page/chat/message.dart';
+import 'package:p2p_chat_android/util/functions.dart';
 import 'package:p2p_chat_core/p2p_chat_core.dart';
 
 import '../../constants.dart';
@@ -32,7 +33,15 @@ abstract class AbstractChatPageState<T extends StatefulWidget> extends State<T> 
 
   List<Message> messages = [];
   Chat? get chat;
+  UserData myUserData = ANONYMOUS_USER;
 
+  @override
+  void initState() {
+    super.initState();
+    getUserData().then((userData) => setState(() {
+      myUserData = userData;
+    }));
+  }
   void onNewMessage(Message message) {
     setState(() {
       this.messages.add(message);
@@ -51,7 +60,7 @@ abstract class AbstractChatPageState<T extends StatefulWidget> extends State<T> 
               child: ListView.builder(
                 itemCount: messages.length,
                 itemBuilder: (context, index) =>
-                    MessageWidget(message: messages[index], userData: UserData('Android smartphone'),),
+                    MessageWidget(message: messages[index], userData: myUserData,),
               ),
             ),
           ),

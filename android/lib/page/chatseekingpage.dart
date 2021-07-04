@@ -2,6 +2,7 @@ import 'dart:collection';
 
 import 'package:flutter/material.dart';
 import 'package:p2p_chat_android/page/chat/chatpage.dart';
+import 'package:p2p_chat_android/util/functions.dart';
 import 'package:p2p_chat_core/p2p_chat_core.dart';
 
 
@@ -29,7 +30,7 @@ class _ChatSeekingPageState extends State<ChatSeekingPage> {
 
   void startSmartChat() async {
     var chat = await SmartChat.from(await getDesktopIpAddress(), (message) {
-    }, userData: UserData('Android smartphone'), onNewSocket: (chat, user) {
+    }, userData: await getUserData(), onNewSocket: (chat, user) {
       if (chat is ChatServer) {
         Navigator.push(context,
             MaterialPageRoute(builder: (context) => ChatServerPage(chatServer: chat,)));
