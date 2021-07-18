@@ -21,7 +21,9 @@ abstract class ChatAutomaton<T extends Chat> {
   void act(T chat, Uint8List data) {
     switch (state) {
       case CONNECTED:
-        onMessageReceived(Message.fromJson(jsonDecode(String.fromCharCodes(data))));
+        final message = VerifiedMessage.fromJson(jsonDecode(String.fromCharCodes(data)));
+        // TODO verify key is for username
+        onMessageReceived(message);
         break;
       default:
         doAct(chat, data);

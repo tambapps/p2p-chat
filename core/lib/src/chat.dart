@@ -18,7 +18,7 @@ abstract class Chat {
 
   /// Sends the [text] message to the other peer
   Message sendText(String text) {
-    final message = Message(address.address, userData, text, DateTime.now());
+    final message = VerifiedMessage(address.address, userData, text, DateTime.now(), "");
     sendMessage(message);
     return message;
   }
@@ -33,11 +33,6 @@ abstract class Chat {
 
   @protected
   void sendData(data);
-
-  @protected
-  Message toMessage(Uint8List data) {
-    return Message.fromJson(jsonDecode(String.fromCharCodes(data)));
-  }
 
   void setMessageCallback(MessageCallback messageCallback);
 

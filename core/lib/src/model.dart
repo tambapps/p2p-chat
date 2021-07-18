@@ -3,9 +3,10 @@ import 'dart:io';
 import 'package:json_annotation/json_annotation.dart';
 
 part 'model.g.dart';
+
 // annotation allowing code auto-generation
-// run 'dart run build_runner build' to auto-generate code
-// TODO store key in messages. It will be given by the server when connecting,
+// run the following command to auto-generate code
+// dart run build_runner build
 // (should be different for each user) and it will verify for each incoming messages
 @JsonSerializable()
 class Message {
@@ -20,6 +21,20 @@ class Message {
   factory Message.fromJson(Map<String, dynamic> json) => _$MessageFromJson(json);
 
   Map<String, dynamic> toJson() => _$MessageToJson(this);
+
+}
+
+@JsonSerializable()
+class VerifiedMessage extends Message {
+  // TODO use key
+  // used to verify user identity. Not used yet
+  String key;
+
+  VerifiedMessage(String address, UserData userData, String text, DateTime sentAt, this.key) : super(address, userData, text, sentAt);
+
+  factory VerifiedMessage.fromJson(Map<String, dynamic> json) => _$VerifiedMessageFromJson(json);
+
+  Map<String, dynamic> toJson() => _$VerifiedMessageToJson(this);
 
 }
 
