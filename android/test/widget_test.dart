@@ -9,11 +9,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:p2p_chat_android/main.dart';
+import 'package:p2p_chat_android/model/models.dart';
+import 'package:p2p_chat_android/sql/database_helper.dart';
 
 void main() {
   testWidgets('Counter increments smoke test', (WidgetTester tester) async {
     // Build our app and trigger a frame.
-    await tester.pumpWidget(MyApp());
+    await tester.pumpWidget(MyApp(Context(await DatabaseHelper.newInstance())));
 
     // Verify that our counter starts at 0.
     expect(find.text('0'), findsOneWidget);

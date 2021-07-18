@@ -35,6 +35,8 @@ dependencies:
   wifi_info_flutter: ^2.0.2
   google_fonts: ^2.0.0
   device_info: ^2.0.2
+  sqflite: ^2.0.0+3
+  path: ^1.8.0
 
 dev_dependencies:
   flutter_test:
