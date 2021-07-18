@@ -26,7 +26,6 @@ class Message {
 
 @JsonSerializable()
 class VerifiedMessage extends Message {
-  // TODO use key
   // used to verify user identity. Not used yet
   String key;
 
@@ -60,8 +59,10 @@ class UserData {
 @JsonSerializable()
 class HandshakeData {
   final UserData userData;
+  /// will be used to verify user identity
+  final String key;
 
-  HandshakeData(this.userData);
+  HandshakeData(this.userData, this.key);
 
   factory HandshakeData.fromJson(Map<String, dynamic> json) => _$HandshakeDataFromJson(json);
 

@@ -1,8 +1,7 @@
 import 'dart:async';
+import 'dart:collection';
 import 'dart:convert';
 import 'dart:io';
-
-import 'dart:typed_data';
 
 import 'package:meta/meta.dart';
 import 'package:p2p_chat_core/src/connection/connection.dart';
@@ -13,18 +12,38 @@ import 'chat_automation.dart';
 import 'chat_discovery.dart';
 import 'model.dart';
 
+/// class used to store keys per user id
+/// This will be useful to verify user identity (prevent identity theft)
+class UserKeyStore {
+  final Map<String, String> _userKeys = HashMap();
+
+  void put(UserData userData, String key) {
+    _userKeys[userData.id] = key;
+  }
+
+  bool verify(UserData userData, String key) {
+    var userKey = _userKeys[userData.id];
+    return userKey != null && userKey == key;
+  }
+}
+
 /// base class for a chat
 abstract class Chat {
 
+  /// Maps the user id -> key
+  /// Used to verify user and therefore prevent identity theft
+  @protected
+  UserKeyStore userKeyStore = UserKeyStore();
+
   /// Sends the [text] message to the other peer
   Message sendText(String text) {
-    final message = VerifiedMessage(address.address, userData, text, DateTime.now(), "");
+    final message = VerifiedMessage(address.address, userData, text, DateTime.now(), key);
     sendMessage(message);
     return message;
   }
 
   /// Sends the [message] to the other peer
-  void sendMessage(Message message) {
+  void sendMessage(VerifiedMessage message) {
     // if I send String, the triggered event data will be String
     // if I send bytes, it will be bytes. For simplicity, let's send bytes (and therefore
     // handle bytes) everytime
@@ -40,6 +59,8 @@ abstract class Chat {
 
   UserData get userData;
   InternetAddress get address;
+  // the key is the address
+  String get key => address.address;
   int get port;
 }
 
@@ -78,10 +99,23 @@ class ChatServer extends Chat {
 
   void start() {
     server.listen((final connection) {
-      connection.automaton = ChatServerAutomaton(onMessageReceived, onNewSocket ?? (chat, data) => true);
+      connection.automaton = ChatServerAutomaton(onMessageReceived,
+          (chat, handshakeData) => _automatonOnNewSocket(connection, chat, handshakeData),
+          userKeyStore);
       connection.listen((bytes) => connection.automaton.act(this, bytes));
-      connections.add(connection);
     });
+  }
+
+  /// automaton callback to know if it must put
+  bool _automatonOnNewSocket(Connection connection, Chat chat, HandshakeData handshakeData) {
+    if (onNewSocket == null || onNewSocket!(chat, handshakeData.userData)) {
+      userKeyStore.put(userData, handshakeData.key);
+      connections.add(connection);
+      return true;
+    } else {
+      connection.close();
+      return false;
+    }
   }
 
   @override
@@ -131,7 +165,8 @@ class ChatClient extends Chat {
       {Function? onError, this.userData = ANONYMOUS_USER}) {
     automaton = ChatClientAutomaton(onMessageReceived);
     // sending handshake data
-    connection.sendText(jsonEncode(HandshakeData(userData)));
+    // using the IP as key
+    connection.sendText(jsonEncode(HandshakeData(userData, key)));
     connection.listen((bytes) => automaton.act(this, bytes), onError: onError);
   }
 
@@ -249,7 +284,7 @@ class SmartChat extends Chat {
   }
 
   @override
-  void sendMessage(Message message) {
+  void sendMessage(VerifiedMessage message) {
     chat.sendMessage(message);
   }
 

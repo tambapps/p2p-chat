@@ -8,6 +8,7 @@ import 'model.dart';
 
 const NEW_CONNECTION = 0;
 const CONNECTED = 1;
+const DISCONNECTED = -1;
 
 abstract class ChatAutomaton<T extends Chat> {
   MessageCallback onMessageReceived;
@@ -22,12 +23,16 @@ abstract class ChatAutomaton<T extends Chat> {
     switch (state) {
       case CONNECTED:
         final message = VerifiedMessage.fromJson(jsonDecode(String.fromCharCodes(data)));
-        // TODO verify key is for username
-        onMessageReceived(message);
+        handleReceivedMessage(message);
         break;
       default:
         doAct(chat, data);
     }
+  }
+
+  @protected
+  void handleReceivedMessage(VerifiedMessage message) {
+    onMessageReceived(message);
   }
 
   void doAct(T chat, Uint8List data) {
@@ -35,11 +40,15 @@ abstract class ChatAutomaton<T extends Chat> {
   }
 }
 
+typedef ChatAutomatonConnectionCallback = bool Function(Chat chat, HandshakeData handshakeData);
+
 class ChatServerAutomaton extends ChatAutomaton<ChatServer> {
   
-  final ChatConnectionCallback onNewSocket;
+  final ChatAutomatonConnectionCallback onNewSocket;
+  final UserKeyStore _userKeyStore;
 
-  ChatServerAutomaton(MessageCallback onMessageReceived, this.onNewSocket) : super(onMessageReceived);
+  ChatServerAutomaton(MessageCallback onMessageReceived, this.onNewSocket, this._userKeyStore)
+      : super(onMessageReceived);
 
   @override
   void doAct(ChatServer chat, Uint8List data) {
@@ -47,12 +56,17 @@ class ChatServerAutomaton extends ChatAutomaton<ChatServer> {
       case NEW_CONNECTION:
         // we just connected to a chat, we need to
         final handshakeData = HandshakeData.fromJson(jsonDecode(String.fromCharCodes(data)));
-        // TODO do handshake and stuff
         //   add optional key password
         // there should be security checks later, to control who can access a chat or not
-        onNewSocket(chat, handshakeData.userData);
-        state = CONNECTED;
+        state = onNewSocket(chat, handshakeData) ? CONNECTED : DISCONNECTED;
         break;
+    }
+  }
+
+  @override
+  void handleReceivedMessage(VerifiedMessage message) {
+    if (_userKeyStore.verify(message.userData, message.key)) {
+      super.handleReceivedMessage(message);
     }
   }
 
@@ -63,8 +77,7 @@ class ChatClientAutomaton extends ChatAutomaton<ChatClient> {
   @override
   int state = CONNECTED;
 
-  ChatClientAutomaton(MessageCallback onMessageReceived) : super(onMessageReceived);
-
-
+  ChatClientAutomaton(MessageCallback onMessageReceived)
+      : super(onMessageReceived);
 
 }
