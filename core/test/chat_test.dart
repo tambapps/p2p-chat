@@ -16,6 +16,7 @@ void main() {
       final chat = await ChatClient.from(address, (message) => print('Client received message ' + jsonEncode(message)));
       print('Connected to socket');
       chat.sendText('Hello');
+      await Future.delayed(Duration(seconds: 1));
       chatServer.sendText('World');
       await Future.delayed(Duration(seconds: 2));
       chatServer.close();

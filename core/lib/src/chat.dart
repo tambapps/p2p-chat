@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:collection';
 import 'dart:convert';
 import 'dart:io';
+import 'dart:math';
 
 import 'package:meta/meta.dart';
 import 'package:p2p_chat_core/src/connection/connection.dart';
@@ -60,7 +61,7 @@ abstract class Chat {
   UserData get userData;
   InternetAddress get address;
   // the key is the address
-  String get key => address.address;
+  String get key;
   int get port;
 }
 
@@ -86,6 +87,9 @@ class ChatServer extends Chat {
   InternetAddress get address => server.address;
   @override
   int get port => server.port;
+  // for the server, the key is the address. The client won't perform any verification anyway
+  @override
+  String get key => address.address;
 
   ChatPeer get chatPeer => ChatPeer.from(address, PeerType.SERVER, port, userData);
 
@@ -147,6 +151,9 @@ class ChatClient extends Chat {
   InternetAddress get address => connection.address;
   @override
   int get port => connection.port;
+  // I wanted to use UUID but I have to import a dependency for that. FLEMME
+  @override
+  final String key = Random().nextDouble().toString();
 
   @override
   UserData userData;
@@ -198,6 +205,8 @@ class SmartChat extends Chat {
   final ChatPeerMulticaster multicaster;
   final ChatPeerListener listener;
   Chat chat;
+  @override
+  String get key => chat.key;
 
   static Future<SmartChat> from(address, MessageCallback onMessageReceived,
       {ChatConnectionCallback? onNewSocket, PeerType peerType = PeerType.ANY, UserData userData = ANONYMOUS_USER}) async {
