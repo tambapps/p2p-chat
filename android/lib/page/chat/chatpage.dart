@@ -1,4 +1,7 @@
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
+import 'package:p2p_chat_android/model/models.dart';
 import 'package:p2p_chat_android/page/chat/message.dart';
 import 'package:p2p_chat_android/util/functions.dart';
 import 'package:p2p_chat_core/p2p_chat_core.dart';
@@ -7,11 +10,13 @@ import '../../constants.dart';
 import 'chat_input_field.dart';
 
 class ChatPage extends StatefulWidget {
+  final Context ctx;
+  final Conversation conversation;
   final ChatClient chat;
-  ChatPage(this.chat, {Key? key}) : super(key: key);
+  ChatPage(this.ctx, this.conversation, this.chat, {Key? key}) : super(key: key);
 
   @override
-  _ChatPageState createState() => _ChatPageState(chat);
+  _ChatPageState createState() => _ChatPageState(chat, ctx, conversation);
 }
 
 class _ChatPageState extends AbstractChatPageState<ChatPage> {
@@ -19,7 +24,7 @@ class _ChatPageState extends AbstractChatPageState<ChatPage> {
   @override
   final ChatClient chat;
 
-  _ChatPageState(this.chat);
+  _ChatPageState(this.chat, Context ctx, Conversation conversation) : super(ctx, conversation);
 
   @override
   void initState() {
@@ -31,9 +36,16 @@ class _ChatPageState extends AbstractChatPageState<ChatPage> {
 
 abstract class AbstractChatPageState<T extends StatefulWidget> extends State<T> {
 
+
+  final Context ctx;
+  final Conversation conversation;
+
   List<Message> messages = [];
+
   Chat? get chat;
   UserData myUserData = ANONYMOUS_USER;
+
+  AbstractChatPageState(this.ctx, this.conversation);
 
   @override
   void initState() {
@@ -43,9 +55,10 @@ abstract class AbstractChatPageState<T extends StatefulWidget> extends State<T> 
     }));
   }
   void onNewMessage(Message message) {
-    setState(() {
-      this.messages.add(message);
-    });
+    ctx.dbHelper.insertNewMessage(conversation.id, message.userData.id, MessageType.TEXT, Uint8List.fromList(message.text.codeUnits), message.sentAt)
+        .then((value) => setState(() {
+          this.messages.add(message);
+        }));
   }
 
   @override
@@ -125,12 +138,14 @@ abstract class AbstractChatPageState<T extends StatefulWidget> extends State<T> 
 class ChatServerPage extends StatefulWidget {
 
   final ChatServer? chatServer;
+  final Context ctx;
+  final Conversation conversation;
 
   // optional chatServer. If not provided, one will be created in this page
-  ChatServerPage({Key? key, this.chatServer}) : super(key: key);
+  ChatServerPage(this.ctx, this.conversation, {Key? key, this.chatServer}) : super(key: key);
 
   @override
-  _ChatServerPageState createState() => _ChatServerPageState(chatServer);
+  _ChatServerPageState createState() => _ChatServerPageState(chatServer, ctx, conversation);
 }
 
 class _ChatServerPageState extends AbstractChatPageState<ChatServerPage> {
@@ -139,7 +154,7 @@ class _ChatServerPageState extends AbstractChatPageState<ChatServerPage> {
   @override
   Chat? get chat => chatServer;
 
-  _ChatServerPageState(this.chatServer);
+  _ChatServerPageState(this.chatServer, Context ctx, Conversation conversation) : super(ctx, conversation);
 
   @override
   void initState() {

@@ -1,4 +1,4 @@
-
+import 'dart:typed_data';
 
 import 'package:p2p_chat_android/model/models.dart';
 import 'package:path/path.dart';
@@ -21,12 +21,14 @@ class DatabaseHelper {
         return db.execute(
           'CREATE TABLE users(id VARCHAR(255) PRIMARY KEY, name TEXT NOT NULL);' +
               'CREATE TABLE conversations(id INTEGER PRIMARY KEY AUTO_INCREMENT, name VARCHAR(255));' +
-              'CREATE TABLE messages(id INTEGER PRIMARY KEY AUTO_INCREMENT, '
+              'CREATE TABLE messages(id INTEGER PRIMARY KEY AUTO_INCREMENT,'
+                  'conversation_id INTEGER NOT NULL,'
                   'user_id VARCHAR(255) NOT NULL,'
                   'type VARCHAR(32) NOT NULL,'
                   'data LONGBLOB NOT NULL,'
                   'sent_at DATETIME NOT NULL,'
-                  'CONSTRAINT messages_fk_user_id FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE ON UPDATE CASCADE'
+                  'CONSTRAINT messages_fk_user_id FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE ON UPDATE CASCADE,'
+                  'CONSTRAINT messages_fk_conversation_id FOREIGN KEY (conversation_id) REFERENCES conversations(id) ON DELETE CASCADE ON UPDATE CASCADE'
                   ');' +
               '',
         );
@@ -39,12 +41,25 @@ class DatabaseHelper {
   }
 
   Future<List<Conversation>> findAllConversations() async {
-    // Query the table for all The Dogs.
     final List<Map<String, dynamic>> maps = await db.query('conversations');
-
-    // Convert the List<Map<String, dynamic> into a List<Dog>.
     return List.generate(maps.length, (i) {
       return Conversation(maps[i]['id'], maps[i]['name']);
     });
+  }
+
+  Future<Conversation> insertNewConversation() async {
+    int id = await db.insert('conversations', {});
+    return Conversation(id, null);
+  }
+
+  Future<DatabaseMessage> insertNewMessage(int conversationId, String userId, MessageType type, Uint8List data, DateTime sentAt) async {
+    int id = await db.insert('conversations', {
+      'conversation_id': conversationId,
+      'user_id': userId,
+      'type': type.toString(),
+      'data': data,
+      'sent_at': sentAt,
+    });
+    return DatabaseMessage(id, conversationId, userId, type, data, sentAt);
   }
 }
