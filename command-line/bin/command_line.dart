@@ -13,7 +13,7 @@ void main(List<String> arguments) async {
   print('P2P Chat 0.0.1');
   var argResults = getArgs(arguments);
   var callback = (Message message) => print('${message.userData.username} at ${message.sentAt.hour}:${message.sentAt.second}:\n${message.text}');
-  final username = argResults[USERNAME_ARG] ?? 'anonymous';
+  final username = argResults[USERNAME_ARG] ?? Platform.localHostname;
 
   Chat chat;
   if (argResults[SERVER_ARG]) {
@@ -33,14 +33,14 @@ void main(List<String> arguments) async {
 
 Future<Chat> clientChat(MessageCallback messageCallback, InternetAddress address, String username) async {
   print('Connecting to ${address.address}');
-  var chat = await ChatClient.from(address, messageCallback, userData: UserData(username));
+  var chat = await ChatClient.from(address, messageCallback, userData: userData(username));
   print('Connected successfully');
   print("Tap text and press 'Enter' to send a message");
   return chat;
 }
 
 Future<Chat> serverChat(MessageCallback messageCallback, InternetAddress address, String username) async {
-  var chatServer = await ChatServer.from(address, messageCallback, userData: UserData(username),
+  var chatServer = await ChatServer.from(address, messageCallback, userData: userData(username),
       onNewSocket: (chat, user) {
         print('${user.username} connected!');
         print("Tap text and press 'Enter' to send a message");
@@ -56,7 +56,7 @@ Future<Chat> serverChat(MessageCallback messageCallback, InternetAddress address
 
 Future<Chat> smartChat(MessageCallback messageCallback, InternetAddress address, String username) async {
   print('Looking/waiting for another chat peer');
-  var chat = await SmartChat.from(address, messageCallback, userData: UserData(username), onNewSocket: (chat, user) {
+  var chat = await SmartChat.from(address, messageCallback, userData: userData(username), onNewSocket: (chat, user) {
     if (chat is ChatServer) {
       print('${user.username} connected to your chat!');
     } else {
@@ -67,6 +67,10 @@ Future<Chat> smartChat(MessageCallback messageCallback, InternetAddress address,
   });
   chat.start();
   return chat;
+}
+
+UserData userData(String username) {
+  return UserData('desktop_' + Platform.localHostname, username);
 }
 
 ArgResults getArgs(List<String> arguments) {
