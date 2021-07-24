@@ -13,11 +13,11 @@ class Context {
 
 // UserData
 class Conversation {
-  int id;
-  String? name;
-  String mainUserId;
+  final int id;
+  final String? name;
+  final String mainUserId;
 
-  Conversation(this.id, this.name, this.mainUserId);
+  const Conversation(this.id, this.name, this.mainUserId);
 
   Map<String, dynamic> toMap() {
     return {

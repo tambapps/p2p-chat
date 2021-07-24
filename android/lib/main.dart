@@ -121,7 +121,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   onTap: () {
                     Navigator.push(context,
                         MaterialPageRoute(
-                            builder: (context) => ChatSeekingPage(ctx, userId: conversation.mainUserId)));
+                            builder: (context) => ChatSeekingPage(ctx, conversation: conversation)));
                   },
                   child: ListTile(
                     title: Text(conversation.name ?? ""),

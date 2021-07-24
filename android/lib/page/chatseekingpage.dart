@@ -7,29 +7,29 @@ import 'package:p2p_chat_android/util/functions.dart';
 import 'package:p2p_chat_core/p2p_chat_core.dart';
 
 
+const String FAKE_USER_ID = 'some_fake_id';
 class ChatSeekingPage extends StatefulWidget {
   final Context ctx;
-  final String? userId;
+  final Conversation conversation;
 
-  ChatSeekingPage(this.ctx, {Key? key, this.userId}) : super(key: key);
+  ChatSeekingPage(this.ctx, {Key? key, this.conversation = const Conversation(0, 'Looking for a peer', 'some_fake_id')}) : super(key: key);
 
   @override
-  _ChatSeekingPageState createState() => _ChatSeekingPageState(ctx, userId);
+  _ChatSeekingPageState createState() => _ChatSeekingPageState(ctx, conversation);
 }
 
 class _ChatSeekingPageState extends AbstractChatPageState<ChatSeekingPage> {
 
   Set<ChatPeer> peers = HashSet();
   @override
-  String get stateLabel => 'Waiting for a peer to connect...';
+  String get stateLabel => 'Waiting for a connection...';
   @override
   SmartChat? chat;
-  final String? userId;
 
   // will later be optional. Thats why it's nullable
   ChatPeerMulticaster? multicaster;
 
-  _ChatSeekingPageState(Context ctx, this.userId) : super(ctx, Conversation(0, 'Fake conversation', 'no user'));
+  _ChatSeekingPageState(Context ctx, Conversation conversation) : super(ctx, conversation);
 
   @override
   void initState() {
@@ -40,7 +40,7 @@ class _ChatSeekingPageState extends AbstractChatPageState<ChatSeekingPage> {
   void startSmartChat() async {
     this.chat = await SmartChat.from(await getDesktopIpAddress(), (message) {
     }, userData: await getUserData(), onNewSocket: (chat, user) {
-      if (userId != null && user.id != userId) {
+      if (conversation.mainUserId != FAKE_USER_ID && user.id != conversation.mainUserId) {
         // if user id was provided, we only want to connect to a specific peer
         return false;
       }
@@ -67,6 +67,8 @@ class _ChatSeekingPageState extends AbstractChatPageState<ChatSeekingPage> {
   @override
   void dispose() {
     this.multicaster?.close();
+    // to avoid super class from closing socket
+    this.chat = null;
     super.dispose();
   }
 }

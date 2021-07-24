@@ -106,7 +106,8 @@ abstract class AbstractChatPageState<T extends StatefulWidget> extends State<T> 
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                "Kristin Watson",
+                conversation.name ?? "unknown",
+              overflow: TextOverflow.ellipsis,
                 style: TextStyle(fontSize: 16),
               ),
               Text(
