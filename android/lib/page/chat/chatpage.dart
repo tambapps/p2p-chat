@@ -22,6 +22,8 @@ class ChatPage extends StatefulWidget {
 class _ChatPageState extends AbstractChatPageState<ChatPage> {
 
   @override
+  String get stateLabel => 'server';
+  @override
   final ChatClient chat;
 
   _ChatPageState(this.chat, Context ctx, Conversation conversation) : super(ctx, conversation);
@@ -41,6 +43,8 @@ abstract class AbstractChatPageState<T extends StatefulWidget> extends State<T> 
   final Conversation conversation;
 
   List<Message> messages = [];
+
+  String get stateLabel;
 
   Chat? get chat;
   UserData myUserData = ANONYMOUS_USER;
@@ -106,7 +110,7 @@ abstract class AbstractChatPageState<T extends StatefulWidget> extends State<T> 
                 style: TextStyle(fontSize: 16),
               ),
               Text(
-                chat is ChatServer ? 'server' : 'client',
+                stateLabel,
                 style: TextStyle(fontSize: 12),
               )
             ],
@@ -153,6 +157,9 @@ class _ChatServerPageState extends AbstractChatPageState<ChatServerPage> {
   ChatServer? chatServer;
   @override
   Chat? get chat => chatServer;
+
+  @override
+  String get stateLabel => 'client';
 
   _ChatServerPageState(this.chatServer, Context ctx, Conversation conversation) : super(ctx, conversation);
 

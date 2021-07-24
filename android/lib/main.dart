@@ -111,21 +111,33 @@ class _MyHomePageState extends State<MyHomePage> {
       );
     } else {
       return Scaffold(
-        body: Center(
-          child: ListView.builder(
-            itemCount: conversations.length,
-            itemBuilder: (context, index) {
-              return InkWell(
-                onTap: () {
+        body: Stack(
+          children: [
+            ListView.builder(
+              itemCount: conversations.length,
+              itemBuilder: (context, index) {
+                return InkWell(
+                  onTap: () {
 
-                },
-                child: ListTile(
-                  title: Text(conversations[index].name ?? ""),
-                ),
-              );
-            },
-          )
-          ,
+                  },
+                  child: ListTile(
+                    title: Text(conversations[index].name ?? ""),
+                  ),
+                );
+              },
+            ),
+            Align(child: Padding(
+              child: FloatingActionButton(onPressed: () {
+                Navigator.push(context,
+                    MaterialPageRoute(
+                        builder: (context) => ChatSeekingPage(ctx)));
+              },
+                child: const Icon(Icons.add),),
+              padding: EdgeInsets.only(right: 16, bottom: 16),
+            ),
+              alignment: Alignment.bottomRight,
+            )
+          ],
         ), // This trailing comma makes auto-formatting nicer for build methods.
       );
     }
