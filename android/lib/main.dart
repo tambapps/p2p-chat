@@ -116,12 +116,15 @@ class _MyHomePageState extends State<MyHomePage> {
             ListView.builder(
               itemCount: conversations.length,
               itemBuilder: (context, index) {
+                final conversation = conversations[index];
                 return InkWell(
                   onTap: () {
-
+                    Navigator.push(context,
+                        MaterialPageRoute(
+                            builder: (context) => ChatSeekingPage(ctx, userId: conversation.mainUserId)));
                   },
                   child: ListTile(
-                    title: Text(conversations[index].name ?? ""),
+                    title: Text(conversation.name ?? ""),
                   ),
                 );
               },
