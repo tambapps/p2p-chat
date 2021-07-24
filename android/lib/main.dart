@@ -112,11 +112,20 @@ class _MyHomePageState extends State<MyHomePage> {
     } else {
       return Scaffold(
         body: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget>[
-            ],
-          ),
+          child: ListView.builder(
+            itemCount: conversations.length,
+            itemBuilder: (context, index) {
+              return InkWell(
+                onTap: () {
+
+                },
+                child: ListTile(
+                  title: Text(conversations[index].name ?? ""),
+                ),
+              );
+            },
+          )
+          ,
         ), // This trailing comma makes auto-formatting nicer for build methods.
       );
     }

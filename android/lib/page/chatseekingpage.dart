@@ -22,8 +22,6 @@ class _ChatSeekingPageState extends State<ChatSeekingPage> {
 
   Set<ChatPeer> peers = HashSet();
 
-  late ChatPeerListener chatPeerListener;
-
   // will later be optional. Thats why it's nullable
   ChatPeerMulticaster? multicaster;
 
@@ -38,12 +36,12 @@ class _ChatSeekingPageState extends State<ChatSeekingPage> {
   void startSmartChat() async {
     var chat = await SmartChat.from(await getDesktopIpAddress(), (message) {
     }, userData: await getUserData(), onNewSocket: (chat, user) {
-      ctx.dbHelper.insertNewConversation().then((conversation) {
+      ctx.dbHelper.insertNewConversation(user.username, user.id).then((conversation) {
         if (chat is ChatServer) {
-          Navigator.push(context,
+          Navigator.pushReplacement(context,
               MaterialPageRoute(builder: (context) => ChatServerPage(ctx, conversation, chatServer: chat)));
         } else {
-          Navigator.push(context,
+          Navigator.pushReplacement(context,
               MaterialPageRoute(builder: (context) => ChatPage(ctx, conversation, chat as ChatClient,)));
         }
       });
@@ -89,7 +87,6 @@ class _ChatSeekingPageState extends State<ChatSeekingPage> {
 
   @override
   void dispose() {
-    chatPeerListener.close();
     this.multicaster?.close();
     super.dispose();
   }

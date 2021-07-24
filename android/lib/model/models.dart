@@ -15,13 +15,15 @@ class Context {
 class Conversation {
   int id;
   String? name;
+  String mainUserId;
 
-  Conversation(this.id, this.name);
+  Conversation(this.id, this.name, this.mainUserId);
 
   Map<String, dynamic> toMap() {
     return {
       'id': id,
       'name': name,
+      'main_user_id': mainUserId
     };
   }
 }
@@ -41,13 +43,17 @@ class DatabaseMessage {
 
   DatabaseMessage(this.id, this.conversationId, this.userId, this.type, this.data, this.sentAt);
 
+  factory DatabaseMessage.fromRow(int id, int conversationId, String userId, String type, Uint8List data, String sentAt) {
+    return DatabaseMessage(id, conversationId, userId, MessageType.TEXT, data, DateTime.parse(sentAt));
+  }
+
   Map<String, dynamic> toMap() {
     return {
       'id': id,
       'conversation_id': conversationId,
       'user_id': userId,
       'type': type.toString(),
-      'data': data,
+      'data': data.toString(),
       'sent_at': sentAt,
     };
   }
