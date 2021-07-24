@@ -22,7 +22,7 @@ class ChatPage extends StatefulWidget {
 class _ChatPageState extends AbstractChatPageState<ChatPage> {
 
   @override
-  String get stateLabel => 'server';
+  String get stateLabel => 'client';
   @override
   final ChatClient chat;
 
@@ -160,7 +160,7 @@ class _ChatServerPageState extends AbstractChatPageState<ChatServerPage> {
   Chat? get chat => chatServer;
 
   @override
-  String get stateLabel => 'client';
+  String get stateLabel => 'server';
 
   _ChatServerPageState(this.chatServer, Context ctx, Conversation conversation) : super(ctx, conversation);
 

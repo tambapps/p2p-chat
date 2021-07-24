@@ -6,13 +6,13 @@ import 'package:p2p_chat_android/page/chat/chatpage.dart';
 import 'package:p2p_chat_android/util/functions.dart';
 import 'package:p2p_chat_core/p2p_chat_core.dart';
 
+const FAKE_CONVERSATION = const Conversation(0, 'Looking for a peer', 'some_fake_id');
 
-const String FAKE_USER_ID = 'some_fake_id';
 class ChatSeekingPage extends StatefulWidget {
   final Context ctx;
   final Conversation conversation;
 
-  ChatSeekingPage(this.ctx, {Key? key, this.conversation = const Conversation(0, 'Looking for a peer', 'some_fake_id')}) : super(key: key);
+  ChatSeekingPage(this.ctx, {Key? key, this.conversation = FAKE_CONVERSATION}) : super(key: key);
 
   @override
   _ChatSeekingPageState createState() => _ChatSeekingPageState(ctx, conversation);
@@ -40,11 +40,11 @@ class _ChatSeekingPageState extends AbstractChatPageState<ChatSeekingPage> {
   void startSmartChat() async {
     this.chat = await SmartChat.from(await getDesktopIpAddress(), (message) {
     }, userData: await getUserData(), onNewSocket: (chat, user) {
-      if (conversation.mainUserId != FAKE_USER_ID && user.id != conversation.mainUserId) {
-        // if user id was provided, we only want to connect to a specific peer
+      if (conversation != FAKE_CONVERSATION && user.id != conversation.mainUserId) {
+        // if conversation id was provided, we only want to connect to a specific peer
         return false;
       }
-      ctx.dbHelper.insertNewConversation(user.username, user.id).then((conversation) {
+      getConversation(user).then((conversation) {
         if (chat is ChatServer) {
           Navigator.pushReplacement(context,
               MaterialPageRoute(builder: (context) => ChatServerPage(ctx, conversation, chatServer: chat)));
@@ -56,6 +56,15 @@ class _ChatSeekingPageState extends AbstractChatPageState<ChatSeekingPage> {
       return true;
     });
     chat!.start();
+  }
+
+  /// return the provided conversation or create a new one
+  Future<Conversation> getConversation(UserData user) async {
+    if (conversation != FAKE_CONVERSATION) {
+      return conversation;
+    } else {
+      return await ctx.dbHelper.insertNewConversation(user.username, user.id);
+    }
   }
 
   @override
