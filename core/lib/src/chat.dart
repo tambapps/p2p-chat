@@ -113,7 +113,7 @@ class ChatServer extends Chat {
   /// automaton callback to know if it must put
   bool _automatonOnNewSocket(Connection connection, Chat chat, HandshakeData handshakeData) {
     if (onNewSocket == null || onNewSocket!(chat, handshakeData.userData)) {
-      userKeyStore.put(userData, handshakeData.key);
+      userKeyStore.put(handshakeData.userData, handshakeData.key);
       connections.add(connection);
       return true;
     } else {
