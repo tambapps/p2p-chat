@@ -37,6 +37,7 @@ dependencies:
   device_info: ^2.0.2
   sqflite: ^2.0.0+3
   path: ^1.8.0
+  fluttertoast: ^8.0.8
 
 dev_dependencies:
   flutter_test:
