@@ -3,11 +3,13 @@
 import 'dart:typed_data';
 
 import 'package:p2p_chat_android/sql/database_helper.dart';
+import 'package:p2p_chat_core/p2p_chat_core.dart';
 
 class Context {
   final DatabaseHelper dbHelper;
+  UserData userData;
 
-  Context(this.dbHelper);
+  Context(this.dbHelper, this.userData);
 
 }
 

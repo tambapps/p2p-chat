@@ -87,3 +87,44 @@ class ConversationTextInputField extends StatelessWidget {
     }
   }
 }
+
+class UsernameTextInputField extends StatelessWidget {
+
+  final controller = TextEditingController();
+  final Function(String) onSubmit;
+
+  UsernameTextInputField({required this.onSubmit, String? username}) {
+    if (username != null) {
+      controller.text = username;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text("Username"),
+        Row(
+          children: [
+            Expanded(child: TextField(
+              controller: controller,
+              maxLines: null,
+              decoration: InputDecoration(
+                hintText: "Type username",
+                border: InputBorder.none,
+              ),
+            )
+            ),
+            IconButton(onPressed: () => onSubmit(controller.text),
+                icon: Icon(
+                  Icons.check_circle,
+                  color: kPrimaryColor,
+                ))
+          ],
+        )
+      ],
+    );
+  }
+}

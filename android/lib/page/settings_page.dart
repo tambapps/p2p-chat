@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:p2p_chat_android/model/models.dart';
-
-import '../constants.dart';
+import 'package:p2p_chat_android/widgets/text_input_field.dart';
+import 'package:p2p_chat_core/p2p_chat_core.dart';
 
 class SettingsPage extends StatefulWidget {
   final Context ctx;
@@ -37,7 +37,17 @@ class _SettingsPageState extends State<SettingsPage> {
           ],
         ),
       ),
-      body: Container(), // This trailing comma makes auto-formatting nicer for build methods.
+      body: Container(
+        child: UsernameTextInputField(onSubmit: this.updateUsername, username: ctx.userData.username,),
+      ), // This trailing comma makes auto-formatting nicer for build methods.
     );
+  }
+
+  void updateUsername(String username) async {
+    UserData updatedUser = ctx.userData.copyWithUsername(username);
+    await ctx.dbHelper.updateUser(updatedUser);
+    setState(() {
+      ctx.userData = updatedUser;
+    });
   }
 }

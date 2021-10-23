@@ -9,7 +9,7 @@ import 'constants.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   final dbHelper = await DatabaseHelper.newInstance();
-  runApp(MyApp(Context(dbHelper)));
+  runApp(MyApp(Context(dbHelper, await dbHelper.getMe())));
 }
 
 class MyApp extends StatelessWidget {

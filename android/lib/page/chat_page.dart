@@ -50,7 +50,6 @@ abstract class AbstractChatPageState<T extends StatefulWidget> extends State<T> 
   String get stateLabel;
 
   Chat? get chat;
-  UserData myUserData = ANONYMOUS_USER;
 
   AbstractChatPageState(this.ctx, this.conversation, List<Message>? messages) {
     if (messages != null) {
@@ -61,9 +60,6 @@ abstract class AbstractChatPageState<T extends StatefulWidget> extends State<T> 
   @override
   void initState() {
     super.initState();
-    getUserData().then((userData) => setState(() {
-      myUserData = userData;
-    }));
     if (messages.isEmpty) {
       // messages may already have been fetched and supplied to this page. If it's not the case, let's fetch them
       fetchMessages(conversation.id);
@@ -96,7 +92,7 @@ abstract class AbstractChatPageState<T extends StatefulWidget> extends State<T> 
             child: ListView.builder(
               itemCount: messages.length,
               itemBuilder: (context, index) =>
-                  MessageWidget(message: messages[index], userData: myUserData, previousMessage: index > 0 ? messages[index - 1] : null, deleteCallback: this.deleteMessage,),
+                  MessageWidget(message: messages[index], userData: ctx.userData, previousMessage: index > 0 ? messages[index - 1] : null, deleteCallback: this.deleteMessage,),
             ),
           ),
           if (canSendMessages()) ConversationTextInputField(onSendClick: this.sendText),

@@ -39,7 +39,7 @@ class _ChatSeekingPageState extends AbstractChatPageState<ChatSeekingPage> {
 
   void startSmartChat() async {
     this.chat = await SmartChat.from(await getDesktopIpAddress(), (message) {
-    }, userData: await getUserData(), onNewSocket: (chat, user) {
+    }, userData: ctx.userData, onNewSocket: (chat, user) {
       if (conversation != FAKE_CONVERSATION && user.id != conversation.mainUserId) {
         // if conversation id was provided, we only want to connect to a specific peer
         return false;

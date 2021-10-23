@@ -54,6 +54,10 @@ class UserData {
           other is UserData &&
               runtimeType == other.runtimeType &&
               id == other.id;
+
+  UserData copyWithUsername(String username) {
+    return UserData(id, username);
+  }
 }
 
 @JsonSerializable()

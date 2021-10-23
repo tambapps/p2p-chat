@@ -2,6 +2,7 @@ import 'dart:collection';
 import 'dart:typed_data';
 
 import 'package:p2p_chat_android/model/models.dart';
+import 'package:p2p_chat_android/util/functions.dart';
 import 'package:p2p_chat_core/p2p_chat_core.dart';
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
@@ -137,5 +138,17 @@ class DatabaseHelper {
     where: 'id = ?',
     whereArgs: [userData.id]
     );
+  }
+
+  Future<UserData> getMe() async {
+    final String deviceId = await getDeviceId();
+    UserData? user = await findUserById(deviceId);
+    if (user != null) {
+      return user;
+    }
+    // create the user if it doesn't exists
+    user = UserData(deviceId, await getDeviceName());
+    createUser(user);
+    return user;
   }
 }
