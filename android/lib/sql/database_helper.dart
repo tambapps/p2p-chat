@@ -130,6 +130,10 @@ class DatabaseHelper {
     return db.delete('messages', where: 'id = ?', whereArgs: [messageId]);
   }
 
+  Future<int> deleteConversation(int conversationId) async {
+    return db.delete('conversations', where: 'id = ?', whereArgs: [conversationId]);
+  }
+
   Future<void> updateUser(UserData userData) async {
     await db.update('users',
         {

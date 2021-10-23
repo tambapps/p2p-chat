@@ -119,6 +119,7 @@ class _MyHomePageState extends State<MyHomePage> {
                         MaterialPageRoute(
                             builder: (context) => ChatSeekingPage(ctx, conversation: conversation)));
                   },
+                  onLongPress: () => deleteDialog(context, conversation),
                   child: ListTile(
                     title: Text(conversation.name ?? ""),
                   ),
@@ -140,6 +141,30 @@ class _MyHomePageState extends State<MyHomePage> {
         ), // This trailing comma makes auto-formatting nicer for build methods.
       );
     }
+  }
+
+  void deleteDialog(BuildContext context, Conversation conversation) {
+    showDialog(context: context, builder: (context) {
+      return AlertDialog(
+        title: Text('Delete this conversation?'),
+        content: Text('You will no longer be able to retrieve it if you do so'),
+        actions: [
+          TextButton(
+            onPressed: () {
+              ctx.dbHelper.deleteConversation(conversation.id).then((value) => setState(() {
+                conversations.remove(conversation);
+              }));
+              Navigator.pop(context);
+            },
+            child: Text('YES', style: TextStyle(color: Colors.red),),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text('CANCEL', style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      );
+    });
   }
 
   void goToSettingsPage() {

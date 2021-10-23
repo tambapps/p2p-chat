@@ -112,6 +112,7 @@ class MessageWidget extends StatelessWidget {
       );
     });
   }
+
   void copyToClipBoard() {
     Clipboard.setData(ClipboardData(text: message.text));
     Fluttertoast.showToast(

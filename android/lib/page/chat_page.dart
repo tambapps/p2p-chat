@@ -102,7 +102,11 @@ abstract class AbstractChatPageState<T extends StatefulWidget> extends State<T> 
   }
 
   void deleteMessage(Message message) {
-    ctx.dbHelper.deleteMessage(messageIdMap[message]!).then((value) => setState(() {
+    final int? messageId = messageIdMap[message];
+    if (messageId == null) {
+      return;
+    }
+    ctx.dbHelper.deleteMessage(messageId).then((value) => setState(() {
       messages.remove(message);
       messageIdMap.remove(message);
     }));
