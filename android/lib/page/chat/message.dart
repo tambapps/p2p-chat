@@ -9,45 +9,53 @@ class MessageWidget extends StatelessWidget {
   const MessageWidget({
     Key? key,
     required this.message,
-    required this.userData
+    required this.userData,
+    this.previousMessage
   }) : super(key: key);
 
   // used to know if is sender or not
   final UserData userData;
   final Message message;
+  final Message? previousMessage;
 
   @override
   Widget build(BuildContext context) {
-
-    return InkWell(
-      onTap: () {},
-      onLongPress: () {
-        // TODO delete dialog
-      },
-      onDoubleTap: () {
-        Clipboard.setData(ClipboardData(text: message.text));
-        Fluttertoast.showToast(
-            msg: "Message copied to clipboard",
-            toastLength: Toast.LENGTH_SHORT
-        );
-      },
-      child: Padding(
-        padding: const EdgeInsets.all(kDefaultPadding),
-        child: Opacity(
-          // TODO handle if message is sent or not
-          opacity: true ? 1.0 : 0.5,
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.start,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(message.userData.username,
-                style: TextStyle(fontSize: 16, color: message.userData.id == userData.id ? kPrimaryColor : null, fontWeight: FontWeight.bold),),
-              Text(message.text, textAlign: TextAlign.start,),
-            ],
-          ),
-        ),
+    final bool shouldDisplayHeadline = _shouldDisplayHeadline();
+    return Padding(
+      padding: EdgeInsets.only(top: shouldDisplayHeadline ? kDefaultPadding * 5.0 / 6.0 : 0),
+      child: InkWell(
+        onTap: () {},
+        onLongPress: () {
+          // TODO delete dialog
+        },
+        onDoubleTap: () {
+          Clipboard.setData(ClipboardData(text: message.text));
+          Fluttertoast.showToast(
+              msg: "Message copied to clipboard",
+              toastLength: Toast.LENGTH_SHORT
+          );
+        },
+        child: Padding(padding: const EdgeInsets.symmetric(horizontal: kDefaultPadding, vertical: kDefaultPadding / 6),
+          child: Opacity(
+            // TODO handle if message is sent or not
+            opacity: true ? 1.0 : 0.5,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                if (shouldDisplayHeadline) Padding(padding: const EdgeInsets.only(top: 4, bottom: 4),
+                  child: Text(message.userData.username,
+                    style: TextStyle(fontSize: 16, color: message.userData.id == userData.id ? kPrimaryColor : null, fontWeight: FontWeight.bold),),),
+                Text(message.text, textAlign: TextAlign.start,),
+              ],
+            ),
+          ),),
       ),
     );
+  }
+
+  bool _shouldDisplayHeadline() {
+    return previousMessage == null || previousMessage!.userData.id != userData.id || previousMessage!.sentAt.difference(message.sentAt).inMinutes >= 4;
   }
 }
 

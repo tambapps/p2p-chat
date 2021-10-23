@@ -86,7 +86,7 @@ abstract class AbstractChatPageState<T extends StatefulWidget> extends State<T> 
             child: ListView.builder(
               itemCount: messages.length,
               itemBuilder: (context, index) =>
-                  MessageWidget(message: messages[index], userData: myUserData,),
+                  MessageWidget(message: messages[index], userData: myUserData, previousMessage: index > 0 ? messages[index - 1] : null),
             ),
           ),
           ChatInputField(onSendClick: this.sendText),
