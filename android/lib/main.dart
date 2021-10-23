@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:p2p_chat_android/model/models.dart';
 import 'package:p2p_chat_android/page/chatseekingpage.dart';
 import 'package:p2p_chat_android/page/settings_page.dart';
 import 'package:p2p_chat_android/sql/database_helper.dart';
-import 'package:p2p_chat_android/theme.dart';
 
 import 'constants.dart';
 
@@ -21,9 +21,29 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
+    final appBarTheme = AppBarTheme(centerTitle: false, elevation: 0);
     return MaterialApp(
       title: 'Flutter Demo',
-      theme: darkThemeData(context),
+      theme: ThemeData.dark().copyWith(
+        primaryColor: kPrimaryColor,
+        scaffoldBackgroundColor: kContentColorLightTheme,
+        appBarTheme: appBarTheme,
+        iconTheme: IconThemeData(color: kContentColorDarkTheme),
+        textTheme: GoogleFonts.interTextTheme(Theme.of(context).textTheme)
+            .apply(bodyColor: kContentColorDarkTheme),
+        colorScheme: ColorScheme.dark().copyWith(
+          primary: kPrimaryColor,
+          secondary: kSecondaryColor,
+          error: kErrorColor,
+        ),
+        bottomNavigationBarTheme: BottomNavigationBarThemeData(
+          backgroundColor: kContentColorLightTheme,
+          selectedItemColor: Colors.white70,
+          unselectedItemColor: kContentColorDarkTheme.withOpacity(0.32),
+          selectedIconTheme: IconThemeData(color: kPrimaryColor),
+          showUnselectedLabels: true,
+        ),
+      ),
       home: MyHomePage(title: 'Flutter Demo Home Page', context: this.context),
     );
   }

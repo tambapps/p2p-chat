@@ -124,7 +124,6 @@ class MessageWidget extends StatelessWidget {
   }
 }
 
-// TODO handle this
 enum MessageStatus {
   sent, not_sent
 }
