@@ -15,6 +15,7 @@ class TextInputField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    double maxHeight = MediaQuery.of(context).size.height / 4;
     return Container(
       padding: EdgeInsets.symmetric(
         horizontal: kDefaultPadding,
@@ -45,11 +46,17 @@ class TextInputField extends StatelessWidget {
                 child: Row(
                   children: [
                     Expanded(
-                      child: TextField(
-                        controller: controller,
-                        decoration: InputDecoration(
-                          hintText: "Type message",
-                          border: InputBorder.none,
+                      child: Container(
+                        constraints: BoxConstraints(maxHeight: maxHeight),
+                        child: SingleChildScrollView(
+                          child: TextField(
+                            controller: controller,
+                            maxLines: null,
+                            decoration: InputDecoration(
+                              hintText: "Type message",
+                              border: InputBorder.none,
+                            ),
+                          ),
                         ),
                       ),
                     ),
