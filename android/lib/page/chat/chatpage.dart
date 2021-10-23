@@ -118,17 +118,6 @@ abstract class AbstractChatPageState<T extends StatefulWidget> extends State<T> 
           )
         ],
       ),
-      actions: [
-        IconButton(
-          icon: Icon(Icons.local_phone),
-          onPressed: () {},
-        ),
-        IconButton(
-          icon: Icon(Icons.videocam),
-          onPressed: () {},
-        ),
-        SizedBox(width: kDefaultPadding / 2),
-      ],
     );
   }
   @override
