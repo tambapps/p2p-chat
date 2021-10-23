@@ -1,3 +1,4 @@
+import 'dart:collection';
 import 'dart:typed_data';
 
 import 'package:p2p_chat_android/model/models.dart';
@@ -75,6 +76,34 @@ class DatabaseHelper {
       'sent_at': sentAt.toString(),
     });
     return DatabaseMessage(id, conversationId, userData.id, type, data, sentAt);
+  }
+
+  Future<List<DatabaseMessage>> findAllMessagesByConversationId(int conversationId) async {
+    final List<Map<String, dynamic>> messagesMap = await db.query('messages', where: 'conversation_id = ?', whereArgs: [conversationId]);
+    return List.generate(messagesMap.length, (i) => DatabaseMessage.fromRow(messagesMap[i]));
+  }
+  Future<List<Message>> findAndConvertAllMessagesByConversationId(int conversationId) async {
+    // sqflite doesn't support JOIN so we have to use a workaround
+    final List<DatabaseMessage> messages = await findAllMessagesByConversationId(conversationId);
+    messages.map((m) => m.userId).toSet().forEach((userId) {
+
+    });
+    Set<String> userIds = messages.map((m) => m.userId).toSet();
+    // sniff cannot pass set or list in whereArgs
+    final List<Map<String, dynamic>> rawUsersMap = await db.query('users', where: 'id IN (' + List.filled(userIds.length, '?').join(',') + ')',
+    whereArgs: userIds.toList());
+    Map<String, UserData> userMap = new HashMap();
+
+    rawUsersMap.forEach((map) {
+      final String userId = map['id'];
+      userMap[userId] = UserData(userId, map['name']);
+    });
+
+    return List.generate(messages.length, (i) {
+      final rawMessage = messages[i];
+      // address was not saved
+      return Message("", userMap[rawMessage.userId]!, String.fromCharCodes(rawMessage.data), rawMessage.sentAt);
+    });
   }
 
   Future<UserData?> findUserById(String id) async {

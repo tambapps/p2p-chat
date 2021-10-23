@@ -43,8 +43,10 @@ class DatabaseMessage {
 
   DatabaseMessage(this.id, this.conversationId, this.userId, this.type, this.data, this.sentAt);
 
-  factory DatabaseMessage.fromRow(int id, int conversationId, String userId, String type, Uint8List data, String sentAt) {
-    return DatabaseMessage(id, conversationId, userId, MessageType.TEXT, data, DateTime.parse(sentAt));
+  factory DatabaseMessage.fromRow(Map<String, dynamic> data) {
+    return DatabaseMessage(data['id'], data['conversation_id'], data['user_id'],
+        MessageType.values.firstWhere((element) => element.toString().toLowerCase() == data['type'].toString().toLowerCase()),
+        data['data'], DateTime.parse(data['sent_at']));
   }
 
   Map<String, dynamic> toMap() {

@@ -57,6 +57,9 @@ abstract class AbstractChatPageState<T extends StatefulWidget> extends State<T> 
     getUserData().then((userData) => setState(() {
       myUserData = userData;
     }));
+    ctx.dbHelper.findAndConvertAllMessagesByConversationId(conversation.id).then((messages) => setState(() {
+      this.messages.addAll(messages);
+    }));
   }
   void onNewMessage(Message message) {
     ctx.dbHelper.insertNewMessage(conversation.id, message.userData, MessageType.TEXT, Uint8List.fromList(message.text.codeUnits), message.sentAt)
