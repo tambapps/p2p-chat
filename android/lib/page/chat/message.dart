@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:p2p_chat_core/p2p_chat_core.dart';
 
 import '../../../constants.dart';
@@ -18,11 +20,13 @@ class MessageWidget extends StatelessWidget {
   Widget build(BuildContext context) {
 
     return InkWell(
-      onTap: () {
-
-      },
+      onTap: () {},
       onLongPress: () {
-
+        Clipboard.setData(ClipboardData(text: message.text));
+        Fluttertoast.showToast(
+            msg: "Message copied to clipboard",
+            toastLength: Toast.LENGTH_SHORT
+        );
       },
       child: Padding(
         padding: const EdgeInsets.all(kDefaultPadding),
