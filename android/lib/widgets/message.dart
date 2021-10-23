@@ -121,7 +121,7 @@ class MessageWidget extends StatelessWidget {
     );
   }
   bool _shouldDisplayHeadline() {
-    return previousMessage == null || previousMessage!.userData.id != userData.id || previousMessage!.sentAt.difference(message.sentAt).inMinutes >= 4;
+    return previousMessage == null || previousMessage!.userData.id != message.userData.id || previousMessage!.sentAt.difference(message.sentAt).inMinutes >= 4;
   }
 }
 
