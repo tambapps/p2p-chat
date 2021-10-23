@@ -2,9 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:p2p_chat_core/p2p_chat_core.dart';
 
 import '../../../constants.dart';
-import 'audio_message.dart';
-import 'text_message.dart';
-import 'video_message.dart';
 
 class MessageWidget extends StatelessWidget {
   const MessageWidget({
@@ -19,32 +16,29 @@ class MessageWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    Widget messageContaint(Message message) {
-      return TextMessage(message: message, userData: userData);
-      /*
-      switch (message.messageType) {
-        case ChatMessageType.text:
-          return TextMessage(message: message);
-        case ChatMessageType.audio:
-          return AudioMessage(message: message);
-        case ChatMessageType.video:
-          return VideoMessage();
-        default:
-          return SizedBox();
-      }
 
-       */
-    }
+    return InkWell(
+      onTap: () {
 
-    return Padding(
-      padding: const EdgeInsets.only(top: kDefaultPadding),
-      child: Row(
-        mainAxisAlignment:
-        message.userData == userData ? MainAxisAlignment.end : MainAxisAlignment.start,
-        children: [
-          messageContaint(message),
-          if (message.userData == userData) MessageStatusDot(status: MessageStatus.sent)
-        ],
+      },
+      onLongPress: () {
+
+      },
+      child: Padding(
+        padding: const EdgeInsets.all(kDefaultPadding),
+        child: Opacity(
+          // TODO handle if message is sent or not
+          opacity: true ? 1.0 : 0.5,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(message.userData.username,
+                style: TextStyle(fontSize: 16),),
+              Text(message.text, textAlign: TextAlign.start,),
+            ],
+          ),
+        ),
       ),
     );
   }

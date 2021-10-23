@@ -72,13 +72,10 @@ abstract class AbstractChatPageState<T extends StatefulWidget> extends State<T> 
       body:  Column(
         children: [
           Expanded(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: kDefaultPadding),
-              child: ListView.builder(
-                itemCount: messages.length,
-                itemBuilder: (context, index) =>
-                    MessageWidget(message: messages[index], userData: myUserData,),
-              ),
+            child: ListView.builder(
+              itemCount: messages.length,
+              itemBuilder: (context, index) =>
+                  MessageWidget(message: messages[index], userData: myUserData,),
             ),
           ),
           ChatInputField(onSendClick: this.sendText),
