@@ -74,6 +74,11 @@ class _ChatSeekingPageState extends AbstractChatPageState<ChatSeekingPage> {
   }
 
   @override
+  bool canSendMessages() {
+    return false;
+  }
+
+  @override
   void dispose() {
     this.multicaster?.close();
     // to avoid super class from closing socket

@@ -89,10 +89,14 @@ abstract class AbstractChatPageState<T extends StatefulWidget> extends State<T> 
                   MessageWidget(message: messages[index], userData: myUserData, previousMessage: index > 0 ? messages[index - 1] : null),
             ),
           ),
-          TextInputField(onSendClick: this.sendText),
+          if (canSendMessages()) TextInputField(onSendClick: this.sendText),
         ],
       ),
     );
+  }
+
+  bool canSendMessages() {
+    return true;
   }
 
   void sendText(String text) {
