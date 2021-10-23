@@ -29,19 +29,15 @@ class MessageWidget extends StatelessWidget {
         onTap: () {},
         onLongPress: () => showOptions(context),
         child: Padding(padding: const EdgeInsets.symmetric(horizontal: kDefaultPadding, vertical: kDefaultPadding / 6),
-          child: Opacity(
-            // TODO handle if message is sent or not
-            opacity: true ? 1.0 : 0.5,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.start,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                if (shouldDisplayHeadline) Padding(padding: const EdgeInsets.only(top: 4, bottom: 4),
-                  child: Text(message.userData.username,
-                    style: TextStyle(fontSize: 16, color: message.userData.id == userData.id ? kPrimaryColor : null, fontWeight: FontWeight.bold),),),
-                Text(message.text, textAlign: TextAlign.start,),
-              ],
-            ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (shouldDisplayHeadline) Padding(padding: const EdgeInsets.only(top: 4, bottom: 4),
+                child: Text(message.userData.username,
+                  style: TextStyle(fontSize: 16, color: message.userData.id == userData.id ? kPrimaryColor : null, fontWeight: FontWeight.bold),),),
+              Text(message.text, textAlign: TextAlign.start,),
+            ],
           ),),
       ),
     );
