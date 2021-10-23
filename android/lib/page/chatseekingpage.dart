@@ -29,7 +29,7 @@ class _ChatSeekingPageState extends AbstractChatPageState<ChatSeekingPage> {
   // will later be optional. Thats why it's nullable
   ChatPeerMulticaster? multicaster;
 
-  _ChatSeekingPageState(Context ctx, Conversation conversation) : super(ctx, conversation);
+  _ChatSeekingPageState(Context ctx, Conversation conversation) : super(ctx, conversation, null);
 
   @override
   void initState() {
@@ -47,10 +47,10 @@ class _ChatSeekingPageState extends AbstractChatPageState<ChatSeekingPage> {
       getConversation(user).then((conversation) {
         if (chat is ChatServer) {
           Navigator.pushReplacement(context,
-              MaterialPageRoute(builder: (context) => ChatServerPage(ctx, conversation, chatServer: chat)));
+              MaterialPageRoute(builder: (context) => ChatServerPage(ctx, conversation, chatServer: chat, messages: this.messages,)));
         } else {
           Navigator.pushReplacement(context,
-              MaterialPageRoute(builder: (context) => ChatPage(ctx, conversation, chat as ChatClient,)));
+              MaterialPageRoute(builder: (context) => ChatPage(ctx, conversation, chat as ChatClient, messages: this.messages)));
         }
       });
       return true;

@@ -13,10 +13,11 @@ class ChatPage extends StatefulWidget {
   final Context ctx;
   final Conversation conversation;
   final ChatClient chat;
-  ChatPage(this.ctx, this.conversation, this.chat, {Key? key}) : super(key: key);
+  final List<Message>? messages;
+  ChatPage(this.ctx, this.conversation, this.chat, {Key? key, this.messages}) : super(key: key);
 
   @override
-  _ChatPageState createState() => _ChatPageState(chat, ctx, conversation);
+  _ChatPageState createState() => _ChatPageState(chat, ctx, conversation, messages);
 }
 
 class _ChatPageState extends AbstractChatPageState<ChatPage> {
@@ -26,7 +27,7 @@ class _ChatPageState extends AbstractChatPageState<ChatPage> {
   @override
   final ChatClient chat;
 
-  _ChatPageState(this.chat, Context ctx, Conversation conversation) : super(ctx, conversation);
+  _ChatPageState(this.chat, Context ctx, Conversation conversation, List<Message>? messages) : super(ctx, conversation, messages);
 
   @override
   void initState() {
@@ -49,7 +50,11 @@ abstract class AbstractChatPageState<T extends StatefulWidget> extends State<T> 
   Chat? get chat;
   UserData myUserData = ANONYMOUS_USER;
 
-  AbstractChatPageState(this.ctx, this.conversation);
+  AbstractChatPageState(this.ctx, this.conversation, List<Message>? messages) {
+    if (messages != null) {
+      this.messages.addAll(messages);
+    }
+  }
 
   @override
   void initState() {
@@ -57,9 +62,12 @@ abstract class AbstractChatPageState<T extends StatefulWidget> extends State<T> 
     getUserData().then((userData) => setState(() {
       myUserData = userData;
     }));
-    ctx.dbHelper.findAndConvertAllMessagesByConversationId(conversation.id).then((messages) => setState(() {
-      this.messages.addAll(messages);
-    }));
+    if (messages.isEmpty) {
+      // messages may already have been fetched and supplied to this page. If it's not the case, let's fetch them
+      ctx.dbHelper.findAndConvertAllMessagesByConversationId(conversation.id).then((messages) => setState(() {
+        this.messages.addAll(messages);
+      }));
+    }
   }
   void onNewMessage(Message message) {
     ctx.dbHelper.insertNewMessage(conversation.id, message.userData, MessageType.TEXT, Uint8List.fromList(message.text.codeUnits), message.sentAt)
@@ -132,14 +140,15 @@ abstract class AbstractChatPageState<T extends StatefulWidget> extends State<T> 
 class ChatServerPage extends StatefulWidget {
 
   final ChatServer? chatServer;
+  final List<Message>? messages;
   final Context ctx;
   final Conversation conversation;
 
   // optional chatServer. If not provided, one will be created in this page
-  ChatServerPage(this.ctx, this.conversation, {Key? key, this.chatServer}) : super(key: key);
+  ChatServerPage(this.ctx, this.conversation, {Key? key, this.chatServer, this.messages}) : super(key: key);
 
   @override
-  _ChatServerPageState createState() => _ChatServerPageState(chatServer, ctx, conversation);
+  _ChatServerPageState createState() => _ChatServerPageState(chatServer, ctx, conversation, messages);
 }
 
 class _ChatServerPageState extends AbstractChatPageState<ChatServerPage> {
@@ -151,7 +160,8 @@ class _ChatServerPageState extends AbstractChatPageState<ChatServerPage> {
   @override
   String get stateLabel => 'server';
 
-  _ChatServerPageState(this.chatServer, Context ctx, Conversation conversation) : super(ctx, conversation);
+  _ChatServerPageState(this.chatServer, Context ctx, Conversation conversation,
+      List<Message>? messages) : super(ctx, conversation, messages);
 
   @override
   void initState() {
