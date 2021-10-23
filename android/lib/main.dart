@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:p2p_chat_android/model/models.dart';
 import 'package:p2p_chat_android/page/home_page.dart';
 import 'package:p2p_chat_android/sql/database_helper.dart';
+import 'package:p2p_chat_android/util/functions.dart';
 
 import 'constants.dart';
 
@@ -43,7 +44,7 @@ class MyApp extends StatelessWidget {
           showUnselectedLabels: true,
         ),
       ),
-      home: MyHomePage(title: 'Flutter Demo Home Page', context: this.context),
+      home: MyHomePage(title: APP_NAME, context: this.context),
     );
   }
 }

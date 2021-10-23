@@ -1,7 +1,6 @@
 import 'dart:io';
 
 import 'package:device_info/device_info.dart';
-import 'package:p2p_chat_core/p2p_chat_core.dart';
 
 Future<String> getDeviceName() async {
   DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
@@ -33,3 +32,5 @@ Future<String> getDeviceId() async {
     return 'ios_' + iosInfo.identifierForVendor;
   }
 }
+
+const String APP_NAME = "PChat";

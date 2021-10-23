@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:p2p_chat_android/model/models.dart';
 import 'package:p2p_chat_android/widgets/text_input_field.dart';
 import 'package:p2p_chat_core/p2p_chat_core.dart';
@@ -49,5 +50,9 @@ class _SettingsPageState extends State<SettingsPage> {
     setState(() {
       ctx.userData = updatedUser;
     });
+    Fluttertoast.showToast(
+        msg: "Username updated successfully",
+        toastLength: Toast.LENGTH_SHORT
+    );
   }
 }

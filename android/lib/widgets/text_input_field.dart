@@ -110,11 +110,11 @@ class UsernameTextInputField extends StatelessWidget {
           children: [
             Expanded(child: TextField(
               controller: controller,
-              maxLines: null,
+              maxLines: 1,
               decoration: InputDecoration(
                 hintText: "Type username",
-                border: InputBorder.none,
               ),
+              onSubmitted: (_) => onSubmit(controller.text),
             )
             ),
             IconButton(onPressed: () => onSubmit(controller.text),

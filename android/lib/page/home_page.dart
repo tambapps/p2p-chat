@@ -1,7 +1,11 @@
 
 
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:p2p_chat_android/model/models.dart';
+import 'package:p2p_chat_android/util/functions.dart';
+import 'package:p2p_chat_android/widgets/text_input_field.dart';
+import 'package:p2p_chat_core/p2p_chat_core.dart';
 
 import '../constants.dart';
 import 'chat_seeking_page.dart';
@@ -43,40 +47,33 @@ class _MyHomePageState extends State<MyHomePage> {
   }
   @override
   Widget build(BuildContext context) {
+    final textTheme = Theme
+        .of(context)
+        .textTheme;
     if (conversations.isEmpty) {
       return Scaffold(
         body: Center(
-          // Center is a layout widget. It takes a single child and positions it
-          // in the middle of the parent.
-          child: Column(
-            // Column is also a layout widget. It takes a list of children and
-            // arranges them vertically. By default, it sizes itself to fit its
-            // children horizontally, and tries to be as tall as its parent.
-            //
-            // Invoke "debug painting" (press "p" in the console, choose the
-            // "Toggle Debug Paint" action from the Flutter Inspector in Android
-            // Studio, or the "Toggle Debug Paint" command in Visual Studio Code)
-            // to see the wireframe for each widget.
-            //
-            // Column has various properties to control how it sizes itself and
-            // how it positions its children. Here we use mainAxisAlignment to
-            // center the children vertically; the main axis here is the vertical
-            // axis because Columns are vertical (the cross axis would be
-            // horizontal).
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget>[
-              ElevatedButton(
-                child: Text('Search chat', style: Theme
-                    .of(context)
-                    .textTheme
-                    .headline4),
-                onPressed: () {
-                  Navigator.push(context,
-                      MaterialPageRoute(
-                          builder: (context) => ChatSeekingPage(ctx)));
-                },
-              ),
-            ],
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
+                Text("Welcome to $APP_NAME\na Peer to Peer chat app", style: textTheme.headline4!.copyWith(color: Colors.white), textAlign: TextAlign.center,),
+                Padding(padding: EdgeInsets.symmetric(horizontal: kDefaultPadding, vertical: 32),
+
+                  child: UsernameTextInputField(onSubmit: this.updateUsername, username: ctx.userData.username,),),
+                ElevatedButton(
+                  child: Text('Search chat', style: Theme
+                      .of(context)
+                      .textTheme
+                      .headline6),
+                  onPressed: () {
+                    Navigator.push(context,
+                        MaterialPageRoute(
+                            builder: (context) => ChatSeekingPage(ctx)));
+                  },
+                )
+              ],
+            ),
           ),
         ), // This trailing comma makes auto-formatting nicer for build methods.
       );
@@ -91,7 +88,7 @@ class _MyHomePageState extends State<MyHomePage> {
               ),
               SizedBox(width: kDefaultPadding * 0.75),
               Expanded(child: Text(
-                "Pchat",
+                APP_NAME,
                 textAlign: TextAlign.center,
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
@@ -171,5 +168,17 @@ class _MyHomePageState extends State<MyHomePage> {
     Navigator.push(context,
         MaterialPageRoute(
             builder: (context) => SettingsPage(ctx: ctx)));
+  }
+
+  void updateUsername(String username) async {
+    UserData updatedUser = ctx.userData.copyWithUsername(username);
+    await ctx.dbHelper.updateUser(updatedUser);
+    setState(() {
+      ctx.userData = updatedUser;
+    });
+    Fluttertoast.showToast(
+        msg: "Username updated successfully",
+        toastLength: Toast.LENGTH_SHORT
+    );
   }
 }
