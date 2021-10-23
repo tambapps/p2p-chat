@@ -3,7 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:p2p_chat_core/p2p_chat_core.dart';
 
-import '../../../constants.dart';
+import '../../constants.dart';
 
 class MessageWidget extends StatelessWidget {
   const MessageWidget({

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:p2p_chat_core/p2p_chat_core.dart';
 
-import '../../constants.dart';
+import '../constants.dart';
 
 class TextInputField extends StatelessWidget {
 

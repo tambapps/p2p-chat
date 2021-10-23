@@ -3,12 +3,12 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:p2p_chat_android/model/models.dart';
-import 'package:p2p_chat_android/page/chat/message.dart';
+import 'package:p2p_chat_android/widgets/message.dart';
 import 'package:p2p_chat_android/util/functions.dart';
 import 'package:p2p_chat_core/p2p_chat_core.dart';
 
-import '../../constants.dart';
-import 'text_input_field.dart';
+import '../constants.dart';
+import '../widgets/text_input_field.dart';
 
 class ChatPage extends StatefulWidget {
   final Context ctx;
