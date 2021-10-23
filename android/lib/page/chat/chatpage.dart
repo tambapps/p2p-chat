@@ -7,7 +7,7 @@ import 'package:p2p_chat_android/util/functions.dart';
 import 'package:p2p_chat_core/p2p_chat_core.dart';
 
 import '../../constants.dart';
-import 'chat_input_field.dart';
+import 'text_input_field.dart';
 
 class ChatPage extends StatefulWidget {
   final Context ctx;
@@ -89,7 +89,7 @@ abstract class AbstractChatPageState<T extends StatefulWidget> extends State<T> 
                   MessageWidget(message: messages[index], userData: myUserData, previousMessage: index > 0 ? messages[index - 1] : null),
             ),
           ),
-          ChatInputField(onSendClick: this.sendText),
+          TextInputField(onSendClick: this.sendText),
         ],
       ),
     );

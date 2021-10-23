@@ -3,12 +3,12 @@ import 'package:p2p_chat_core/p2p_chat_core.dart';
 
 import '../../constants.dart';
 
-class ChatInputField extends StatelessWidget {
+class TextInputField extends StatelessWidget {
 
   final controller = TextEditingController();
   final Function(String) onSendClick;
 
-  ChatInputField({
+  TextInputField({
     Key? key,
     required this.onSendClick,
   }) : super(key: key);
