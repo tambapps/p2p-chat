@@ -38,7 +38,7 @@ class MessageWidget extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(message.userData.username,
-                style: TextStyle(fontSize: 16),),
+                style: TextStyle(fontSize: 16, color: message.userData.id == userData.id ? kPrimaryColor : null, fontWeight: FontWeight.bold),),
               Text(message.text, textAlign: TextAlign.start,),
             ],
           ),
