@@ -33,6 +33,7 @@ class MessageWidget extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.start,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // TODO display time like in Discord (if it were yesterday, display 'yesterday')
               if (shouldDisplayHeadline) Padding(padding: const EdgeInsets.only(top: 4, bottom: 4),
                 child: Text(message.userData.username,
                   style: TextStyle(fontSize: 16, color: message.userData.id == userData.id ? kPrimaryColor : null, fontWeight: FontWeight.bold),),),

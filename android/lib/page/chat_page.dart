@@ -38,6 +38,7 @@ class _ChatPageState extends AbstractChatPageState<ChatPage> {
 
 }
 
+// TODO handle lost connections (e.g when a peer disconnect)
 abstract class AbstractChatPageState<T extends StatefulWidget> extends State<T> {
 
 
