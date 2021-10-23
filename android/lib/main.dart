@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:p2p_chat_android/model/models.dart';
 import 'package:p2p_chat_android/page/chatseekingpage.dart';
+import 'package:p2p_chat_android/page/settings_page.dart';
 import 'package:p2p_chat_android/sql/database_helper.dart';
 import 'package:p2p_chat_android/theme.dart';
 
@@ -164,6 +165,8 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void goToSettingsPage() {
-    // TODO add a screen to modify username
+    Navigator.push(context,
+        MaterialPageRoute(
+            builder: (context) => SettingsPage(ctx: ctx)));
   }
 }
