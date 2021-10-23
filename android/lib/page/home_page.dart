@@ -12,7 +12,8 @@ import 'chat_seeking_page.dart';
 import 'settings_page.dart';
 
 class MyHomePage extends StatefulWidget {
-  MyHomePage({Key? key, required this.title, required this.context}) : super(key: key);
+  final List<Conversation> conversations;
+  MyHomePage({Key? key, required this.title, required this.context, required this.conversations}) : super(key: key);
 
   // This widget is the home page of your application. It is stateful, meaning
   // that it has a State object (defined below) that contains fields that affect
@@ -27,29 +28,28 @@ class MyHomePage extends StatefulWidget {
   final Context context;
 
   @override
-  _MyHomePageState createState() => _MyHomePageState(context);
+  _MyHomePageState createState() => _MyHomePageState(context, conversations);
 }
 
-class _MyHomePageState extends State<MyHomePage> {
+class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
 
   final Context ctx;
-  List<Conversation> conversations = [];
+  List<Conversation> conversations;
 
-  _MyHomePageState(this.ctx);
+  _MyHomePageState(this.ctx, this.conversations);
 
   @override
   void initState() {
-    ctx.dbHelper.findAllConversations().then((value) => setState(() {
-      this.conversations = value;
-    }));
+    WidgetsBinding.instance!.addObserver(this);
     super.initState();
-
   }
+
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme
         .of(context)
         .textTheme;
+    final conversationNameTextTheme = textTheme.bodyText1!.copyWith(fontSize: 19);
     if (conversations.isEmpty) {
       return Scaffold(
         body: Center(
@@ -118,7 +118,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   },
                   onLongPress: () => deleteDialog(context, conversation),
                   child: ListTile(
-                    title: Text(conversation.name ?? ""),
+                    title: Text(conversation.name ?? "", style: conversationNameTextTheme,),
                   ),
                 );
               },
@@ -180,5 +180,28 @@ class _MyHomePageState extends State<MyHomePage> {
         msg: "Username updated successfully",
         toastLength: Toast.LENGTH_SHORT
     );
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance!.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      onResume();
+    }
+  }
+
+  void onResume() async {
+    // update state
+    final conversations = await ctx.dbHelper.findAllConversations();
+    final userData = await ctx.dbHelper.getMe();
+    setState(() {
+      this.conversations = conversations;
+      this.ctx.userData = userData;
+    });
   }
 }

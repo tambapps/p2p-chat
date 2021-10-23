@@ -10,13 +10,15 @@ import 'constants.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   final dbHelper = await DatabaseHelper.newInstance();
-  runApp(MyApp(Context(dbHelper, await dbHelper.getMe())));
+  final conversations = await dbHelper.findAllConversations();
+  runApp(MyApp(Context(dbHelper, await dbHelper.getMe()), conversations));
 }
 
 class MyApp extends StatelessWidget {
   final Context context;
+  final List<Conversation> conversations;
 
-  MyApp(this.context);
+  MyApp(this.context, this.conversations);
 
   // This widget is the root of your application.
   @override
@@ -44,7 +46,7 @@ class MyApp extends StatelessWidget {
           showUnselectedLabels: true,
         ),
       ),
-      home: MyHomePage(title: APP_NAME, context: this.context),
+      home: MyHomePage(title: APP_NAME, context: this.context, conversations: conversations),
     );
   }
 }
