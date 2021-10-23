@@ -22,6 +22,9 @@ class MessageWidget extends StatelessWidget {
     return InkWell(
       onTap: () {},
       onLongPress: () {
+        // TODO delete dialog
+      },
+      onDoubleTap: () {
         Clipboard.setData(ClipboardData(text: message.text));
         Fluttertoast.showToast(
             msg: "Message copied to clipboard",
