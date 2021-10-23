@@ -10,6 +10,7 @@ class MessageWidget extends StatelessWidget {
     Key? key,
     required this.message,
     required this.userData,
+    required this.deleteCallback,
     this.previousMessage
   }) : super(key: key);
 
@@ -17,6 +18,7 @@ class MessageWidget extends StatelessWidget {
   final UserData userData;
   final Message message;
   final Message? previousMessage;
+  final Function(Message) deleteCallback;
 
   @override
   Widget build(BuildContext context) {
@@ -25,16 +27,7 @@ class MessageWidget extends StatelessWidget {
       padding: EdgeInsets.only(top: shouldDisplayHeadline ? kDefaultPadding * 5.0 / 6.0 : 0),
       child: InkWell(
         onTap: () {},
-        onLongPress: () {
-          // TODO delete dialog
-        },
-        onDoubleTap: () {
-          Clipboard.setData(ClipboardData(text: message.text));
-          Fluttertoast.showToast(
-              msg: "Message copied to clipboard",
-              toastLength: Toast.LENGTH_SHORT
-          );
-        },
+        onLongPress: () => showOptions(context),
         child: Padding(padding: const EdgeInsets.symmetric(horizontal: kDefaultPadding, vertical: kDefaultPadding / 6),
           child: Opacity(
             // TODO handle if message is sent or not
@@ -54,6 +47,78 @@ class MessageWidget extends StatelessWidget {
     );
   }
 
+  void showOptions(BuildContext context) {
+    double width = MediaQuery.of(context).size.width;
+    const padding = EdgeInsets.symmetric(horizontal: kDefaultPadding, vertical: kDefaultPadding / 2);
+    showModalBottomSheet<void>(
+      context: context,
+      builder: (BuildContext context) {
+        return Wrap(
+          direction: Axis.horizontal,
+          children: [
+            Container(
+              decoration: BoxDecoration(color: kContentColorLightTheme),
+              width: width,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  InkWell(
+                    onTap: () {
+                      copyToClipBoard();
+                      Navigator.pop(context);
+                    },
+                    child: Padding(padding: padding,
+                      child: Text("Copy Text"),
+                    ),
+                  ),
+                  InkWell(
+                    onTap: () {
+                      Navigator.pop(context);
+                      deleteDialog(context);
+                    },
+                    child: Padding(padding: padding,
+                      child: Text("Delete Message", style: TextStyle(color: Colors.red),),
+                    ),
+                  )
+                ],
+              ),
+            ),
+            Padding(padding: const EdgeInsets.only(top: kDefaultPadding))
+          ],
+        );
+      },
+    );
+  }
+
+  void deleteDialog(BuildContext context) {
+    showDialog(context: context, builder: (context) {
+      return AlertDialog(
+        title: Text('Delete message?'),
+        content: Text('You will no longer be able to retrieve it if you do so'),
+        actions: [
+          TextButton(
+            onPressed: () {
+              deleteCallback(message);
+              Navigator.pop(context);
+            },
+            child: Text('YES', style: TextStyle(color: Colors.red),),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text('CANCEL', style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      );
+    });
+  }
+  void copyToClipBoard() {
+    Clipboard.setData(ClipboardData(text: message.text));
+    Fluttertoast.showToast(
+        msg: "Message copied to clipboard",
+        toastLength: Toast.LENGTH_SHORT
+    );
+  }
   bool _shouldDisplayHeadline() {
     return previousMessage == null || previousMessage!.userData.id != userData.id || previousMessage!.sentAt.difference(message.sentAt).inMinutes >= 4;
   }

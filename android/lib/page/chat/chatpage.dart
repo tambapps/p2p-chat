@@ -1,3 +1,4 @@
+import 'dart:collection';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
@@ -44,6 +45,7 @@ abstract class AbstractChatPageState<T extends StatefulWidget> extends State<T> 
   final Conversation conversation;
 
   List<Message> messages = [];
+  Map<Message, int> messageIdMap = HashMap();
 
   String get stateLabel;
 
@@ -64,11 +66,19 @@ abstract class AbstractChatPageState<T extends StatefulWidget> extends State<T> 
     }));
     if (messages.isEmpty) {
       // messages may already have been fetched and supplied to this page. If it's not the case, let's fetch them
-      ctx.dbHelper.findAndConvertAllMessagesByConversationId(conversation.id).then((messages) => setState(() {
-        this.messages.addAll(messages);
-      }));
+      fetchMessages(conversation.id);
     }
   }
+
+  void fetchMessages(int conversationId) async {
+    List<DatabaseMessage> dbMessages = await ctx.dbHelper.findAllMessagesByConversationId(conversationId);
+    final messageIdMap = await ctx.dbHelper.convertMessages(dbMessages);
+    setState(() {
+      this.messageIdMap.addAll(messageIdMap);
+      this.messages.addAll(messageIdMap.keys);
+    });
+  }
+
   void onNewMessage(Message message) {
     ctx.dbHelper.insertNewMessage(conversation.id, message.userData, MessageType.TEXT, Uint8List.fromList(message.text.codeUnits), message.sentAt)
         .then((value) => setState(() {
@@ -86,13 +96,20 @@ abstract class AbstractChatPageState<T extends StatefulWidget> extends State<T> 
             child: ListView.builder(
               itemCount: messages.length,
               itemBuilder: (context, index) =>
-                  MessageWidget(message: messages[index], userData: myUserData, previousMessage: index > 0 ? messages[index - 1] : null),
+                  MessageWidget(message: messages[index], userData: myUserData, previousMessage: index > 0 ? messages[index - 1] : null, deleteCallback: this.deleteMessage,),
             ),
           ),
           if (canSendMessages()) TextInputField(onSendClick: this.sendText),
         ],
       ),
     );
+  }
+
+  void deleteMessage(Message message) {
+    ctx.dbHelper.deleteMessage(messageIdMap[message]!).then((value) => setState(() {
+      messages.remove(message);
+      messageIdMap.remove(message);
+    }));
   }
 
   bool canSendMessages() {

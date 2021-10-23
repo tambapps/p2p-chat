@@ -82,13 +82,8 @@ class DatabaseHelper {
     final List<Map<String, dynamic>> messagesMap = await db.query('messages', where: 'conversation_id = ?', whereArgs: [conversationId]);
     return List.generate(messagesMap.length, (i) => DatabaseMessage.fromRow(messagesMap[i]));
   }
-  Future<List<Message>> findAndConvertAllMessagesByConversationId(int conversationId) async {
-    // sqflite doesn't support JOIN so we have to use a workaround
-    final List<DatabaseMessage> messages = await findAllMessagesByConversationId(conversationId);
-    messages.map((m) => m.userId).toSet().forEach((userId) {
-
-    });
-    Set<String> userIds = messages.map((m) => m.userId).toSet();
+  Future<Map<Message, int>> convertMessages(List<DatabaseMessage> dbMessages) async {
+    Set<String> userIds = dbMessages.map((m) => m.userId).toSet();
     // sniff cannot pass set or list in whereArgs
     final List<Map<String, dynamic>> rawUsersMap = await db.query('users', where: 'id IN (' + List.filled(userIds.length, '?').join(',') + ')',
     whereArgs: userIds.toList());
@@ -99,11 +94,11 @@ class DatabaseHelper {
       userMap[userId] = UserData(userId, map['name']);
     });
 
-    return List.generate(messages.length, (i) {
-      final rawMessage = messages[i];
-      // address was not saved
-      return Message("", userMap[rawMessage.userId]!, String.fromCharCodes(rawMessage.data), rawMessage.sentAt);
+    final Map<Message, int> messageIdMap = {};
+    dbMessages.forEach((dbMessage) {
+      messageIdMap[Message("", userMap[dbMessage.userId]!, String.fromCharCodes(dbMessage.data), dbMessage.sentAt)] = dbMessage.id;
     });
+    return messageIdMap;
   }
 
   Future<UserData?> findUserById(String id) async {
@@ -128,6 +123,10 @@ class DatabaseHelper {
       'id': userData.id,
       'name': userData.username,
     });
+  }
+
+  Future<int> deleteMessage(int messageId) async {
+    return db.delete('messages', where: 'id = ?', whereArgs: [messageId]);
   }
 
   Future<void> updateUser(UserData userData) async {
