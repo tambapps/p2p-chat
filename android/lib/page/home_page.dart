@@ -69,7 +69,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
                   onPressed: () {
                     Navigator.push(context,
                         MaterialPageRoute(
-                            builder: (context) => ChatSeekingPage(ctx)));
+                            builder: (context) => ChatSeekingPage(ctx, seeking: true,)));
                   },
                 )
               ],
@@ -127,7 +127,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
               child: FloatingActionButton(onPressed: () {
                 Navigator.push(context,
                     MaterialPageRoute(
-                        builder: (context) => ChatSeekingPage(ctx)));
+                        builder: (context) => ChatSeekingPage(ctx, seeking: true)));
               },
                 child: const Icon(Icons.add),),
               padding: EdgeInsets.only(right: 16, bottom: 16),

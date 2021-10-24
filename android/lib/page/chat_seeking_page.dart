@@ -8,15 +8,15 @@ import 'package:p2p_chat_core/p2p_chat_core.dart';
 
 const FAKE_CONVERSATION = const Conversation(0, 'Looking for a peer', 'some_fake_id');
 
-// TODO remove behaviour that finds an existing conversation when possible
 class ChatSeekingPage extends StatefulWidget {
   final Context ctx;
   final Conversation conversation;
+  final bool? seeking;
 
-  ChatSeekingPage(this.ctx, {Key? key, this.conversation = FAKE_CONVERSATION}) : super(key: key);
+  ChatSeekingPage(this.ctx, {Key? key, this.conversation = FAKE_CONVERSATION, this.seeking}) : super(key: key);
 
   @override
-  _ChatSeekingPageState createState() => _ChatSeekingPageState(ctx, conversation);
+  _ChatSeekingPageState createState() => _ChatSeekingPageState(ctx, conversation, seeking);
 }
 
 class _ChatSeekingPageState extends AbstractChatPageState<ChatSeekingPage> {
@@ -34,8 +34,18 @@ class _ChatSeekingPageState extends AbstractChatPageState<ChatSeekingPage> {
   // will later be optional. Thats why it's nullable
   ChatPeerMulticaster? multicaster;
 
-  _ChatSeekingPageState(Context ctx, Conversation conversation) : super(ctx, conversation, null);
+  _ChatSeekingPageState(Context ctx, Conversation conversation, bool? seeking) : super(ctx, conversation, null) {
+    this.seeking = seeking ?? false;
+    print(seeking);
+  }
 
+  @override
+  void initState() {
+    super.initState();
+    if (seeking) {
+      startSmartChat();
+    }
+  }
   void startSmartChat() async {
     SmartChat chat = await SmartChat.from(await getDesktopIpAddress(), (message) {
     }, userData: ctx.userData, onNewSocket: (chat, user) {
