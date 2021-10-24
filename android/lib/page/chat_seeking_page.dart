@@ -1,6 +1,7 @@
 import 'dart:collection';
 
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:p2p_chat_android/model/models.dart';
 import 'package:p2p_chat_android/page/chat_page.dart';
 import 'package:p2p_chat_core/p2p_chat_core.dart';
@@ -22,12 +23,13 @@ class _ChatSeekingPageState extends AbstractChatPageState<ChatSeekingPage> {
 
   Set<ChatPeer> peers = HashSet();
   @override
-  String get stateLabel => chat != null ? 'Waiting for a connection...' : "";
+  String get stateLabel => seeking ? 'Waiting for a connection...' : "";
   @override
   SmartChat? chat;
   // variable to know if we must dispose chat or not
   // we want to keep it when we pass it to another ChatPage, and dispose it otherwise
   bool keepChat = false;
+  bool seeking = false;
 
   // will later be optional. Thats why it's nullable
   ChatPeerMulticaster? multicaster;
@@ -53,10 +55,27 @@ class _ChatSeekingPageState extends AbstractChatPageState<ChatSeekingPage> {
         }
       });
       return true;
-    });
+    }, onServerError: onServerError, onServerDone: onServerDone);
     chat.start();
     setState(() {
       this.chat = chat;
+      seeking = true;
+    });
+  }
+
+  void onServerError(e) {
+    if (!mounted) return;
+    Fluttertoast.showToast(
+        msg: "An error occurred ${e.toString()}",
+        toastLength: Toast.LENGTH_SHORT
+    );
+    onServerDone();
+  }
+
+  void onServerDone() {
+    if (!mounted) return;
+    setState(() {
+      seeking = false;
     });
   }
 
