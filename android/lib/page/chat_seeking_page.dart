@@ -42,6 +42,7 @@ class _ChatSeekingPageState extends AbstractChatPageState<ChatSeekingPage> {
         return false;
       }
       getConversation(user).then((conversation) {
+        if (!mounted) return;
         this.keepChat = true;
         if (chat is ChatServer) {
           Navigator.pushReplacement(context,
