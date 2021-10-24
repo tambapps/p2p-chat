@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_linkify/flutter_linkify.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:p2p_chat_core/p2p_chat_core.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../constants.dart';
 
@@ -37,7 +39,17 @@ class MessageWidget extends StatelessWidget {
               if (shouldDisplayHeadline) Padding(padding: const EdgeInsets.only(top: 4, bottom: 4),
                 child: Text(message.userData.username,
                   style: TextStyle(fontSize: 16, color: message.userData.id == userData.id ? kPrimaryColor : null, fontWeight: FontWeight.bold),),),
-              Text(message.text, textAlign: TextAlign.start,),
+              Linkify(
+                onOpen: (link) async {
+                  if (await canLaunch(link.url)) {
+                    await launch(link.url);
+                  } else {
+                    throw 'Could not launch $link';
+                  }
+                },
+                text: message.text,
+                textAlign: TextAlign.start,
+              ),
             ],
           ),),
       ),

@@ -38,6 +38,9 @@ dependencies:
   sqflite: ^2.0.0+3
   path: ^1.8.0
   fluttertoast: ^8.0.8
+  flutter_linkify: ^5.0.2
+  # needs specific configuration for iOS
+  url_launcher: ^6.0.12
 
 dev_dependencies:
   flutter_test:
