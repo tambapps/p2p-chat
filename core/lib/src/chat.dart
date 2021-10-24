@@ -89,10 +89,10 @@ class ChatServer extends Chat {
   @override
   String get key => address.address;
 
-  final Function? onServerError;
-  final Function? onConnectionError;
-  final void Function()? onServerDone;
-  final void Function()? onConnectionDone;
+  Function? onServerError;
+  Function? onConnectionError;
+  void Function()? onServerDone;
+  void Function()? onConnectionDone;
 
   ChatPeer get chatPeer => ChatPeer.from(address, PeerType.SERVER, port, userData);
 
@@ -110,8 +110,33 @@ class ChatServer extends Chat {
       connection.automaton = ChatServerAutomaton(onMessageReceived,
           (chat, handshakeData) => _automatonOnNewSocket(connection, chat, handshakeData),
           userKeyStore);
-      connection.listen((bytes) => connection.automaton.act(this, bytes), onError: onConnectionError, onDone: onConnectionDone);
-    }, onError: onServerError, onDone: onServerDone);
+      connection.listen((bytes) => connection.automaton.act(this, bytes), onError: _doOnConnectionError, onDone: _doOnConnectionDone);
+    }, onError: _doOnServerError, onDone: _doOnServerDone);
+  }
+
+  // useful because onServerError is not final, same for below functions
+  void _doOnServerError(e) {
+    if (onServerError != null) {
+      onServerError!(e);
+    }
+  }
+
+  void _doOnServerDone() {
+    if (onServerDone != null) {
+      onServerDone!();
+    }
+  }
+
+  void _doOnConnectionError(e) {
+    if (onConnectionError != null) {
+      onConnectionError!(e);
+    }
+  }
+
+  void _doOnConnectionDone() {
+    if (onConnectionDone != null) {
+      onConnectionDone!();
+    }
   }
 
   /// automaton callback to know if it must put
@@ -159,6 +184,9 @@ class ChatClient extends Chat {
   @override
   final String key = Random().nextDouble().toString();
 
+  Function? onError;
+  void Function()? onDone;
+
   @override
   UserData userData;
 
@@ -178,7 +206,7 @@ class ChatClient extends Chat {
     // sending handshake data
     // using the IP as key
     connection.sendText(jsonEncode(HandshakeData(userData, key)));
-    connection.listen((bytes) => automaton.act(this, bytes), onError: onError, onDone: onDone);
+    connection.listen((bytes) => automaton.act(this, bytes), onError: _doOnError, onDone: _doOnDone);
   }
 
   @override
@@ -194,6 +222,18 @@ class ChatClient extends Chat {
   @override
   void setMessageCallback(MessageCallback messageCallback) {
     automaton.onMessageReceived = messageCallback;
+  }
+
+  void _doOnError(e) {
+    if (onError != null) {
+      onError!(e);
+    }
+  }
+
+  void _doOnDone() {
+    if (onDone != null) {
+      onDone!();
+    }
   }
 }
 
@@ -212,8 +252,12 @@ class SmartChat extends Chat {
   @override
   String get key => chat.key;
 
+  final Function? onConnectionError;
+  final void Function()? onConnectionDone;
+
   static Future<SmartChat> from(address, MessageCallback onMessageReceived,
-      {ChatConnectionCallback? onNewSocket, PeerType peerType = PeerType.ANY, UserData userData = ANONYMOUS_USER}) async {
+      {ChatConnectionCallback? onNewSocket, PeerType peerType = PeerType.ANY, UserData userData = ANONYMOUS_USER,
+        Function? onServerError, Function? onConnectionError, Function()? onServerDone, Function()? onConnectionDone}) async {
     final multicaster = await ChatPeerMulticaster.newInstance();
     final listener = await ChatPeerListener.newInstance();
     final server = await ChatServer.from(address, onMessageReceived, userData: userData, onNewSocket: (chat, data) {
@@ -223,14 +267,15 @@ class SmartChat extends Chat {
         return true;
       }
       return false;
-    });
+    }, onServerError: onServerError, onServerDone: onServerDone, onConnectionError: onConnectionError, onConnectionDone: onConnectionDone);
 
     // the chat is the server by default, if it will be overriden by a client chat
     // if one chat peer is found
     return SmartChat(peerType, onMessageReceived, server, server, multicaster, listener);
   }
 
-  SmartChat(this.peerType, this.onMessageReceived, this.chatServer, this.chat, this.multicaster, this.listener);
+  SmartChat(this.peerType, this.onMessageReceived, this.chatServer, this.chat, this.multicaster, this.listener,
+  {this.onConnectionError, this.onConnectionDone});
 
   void start() {
     chatServer.start();
@@ -267,7 +312,7 @@ class SmartChat extends Chat {
   }
 
   Future<bool> _connectTo(ChatPeer chatPeer) async {
-    Chat chat = await ChatClient.from(chatPeer.internetAddress, onMessageReceived, userData: chatServer.userData);
+    Chat chat = await ChatClient.from(chatPeer.internetAddress, onMessageReceived, userData: chatServer.userData, onError: onConnectionError, onDone: onConnectionDone);
     if (chatServer.onNewSocket?.call(chat, chatPeer.userData) ?? true) {
       this.chat = chat;
       chatServer.close();
