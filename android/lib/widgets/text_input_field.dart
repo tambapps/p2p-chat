@@ -50,6 +50,7 @@ class ConversationTextInputField extends StatelessWidget {
                         child: SingleChildScrollView(
                           child: TextField(
                             controller: controller,
+                            // TODO multiline text still doesn't work
                             maxLines: null,
                             decoration: InputDecoration(
                               hintText: "Type message",

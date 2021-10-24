@@ -2,7 +2,7 @@
     package="com.tambapps.p2p.chat.android">
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
    <application
-        android:label="android"
+        android:label="Pchat"
         android:icon="@mipmap/ic_launcher">
         <activity
             android:name=".MainActivity"

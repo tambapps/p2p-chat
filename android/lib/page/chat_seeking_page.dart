@@ -3,11 +3,11 @@ import 'dart:collection';
 import 'package:flutter/material.dart';
 import 'package:p2p_chat_android/model/models.dart';
 import 'package:p2p_chat_android/page/chat_page.dart';
-import 'package:p2p_chat_android/util/functions.dart';
 import 'package:p2p_chat_core/p2p_chat_core.dart';
 
 const FAKE_CONVERSATION = const Conversation(0, 'Looking for a peer', 'some_fake_id');
 
+// TODO remove behaviour that finds an existing conversation when possible
 class ChatSeekingPage extends StatefulWidget {
   final Context ctx;
   final Conversation conversation;

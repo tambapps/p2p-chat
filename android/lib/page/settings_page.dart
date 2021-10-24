@@ -28,13 +28,16 @@ class _SettingsPageState extends State<SettingsPage> {
         automaticallyImplyLeading: false,
         title: Row(
           children: [
+            BackButton(),
             Expanded(child: Text(
               "Settings",
               textAlign: TextAlign.center,
               overflow: TextOverflow.ellipsis,
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-            )
-            )
+            ),
+            ),
+            // to balance BackButton
+            Container(width: 24.0,)
           ],
         ),
       ),
