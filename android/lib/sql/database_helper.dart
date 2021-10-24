@@ -144,6 +144,16 @@ class DatabaseHelper {
     );
   }
 
+  Future<void> updateConversation(Conversation conversation) async {
+    await db.update('conversations',
+        {
+          'name': conversation.name
+        },
+    where: 'id = ?',
+    whereArgs: [conversation.id]
+    );
+  }
+
   Future<UserData> getMe() async {
     final String deviceId = await getDeviceId();
     UserData? user = await findUserById(deviceId);

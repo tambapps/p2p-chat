@@ -28,6 +28,10 @@ class Conversation {
       'main_user_id': mainUserId
     };
   }
+
+  Conversation copyWith({String? name}) {
+    return Conversation(id, name ?? this.name, mainUserId);
+  }
 }
 
 enum MessageType {

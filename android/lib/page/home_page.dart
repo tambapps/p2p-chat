@@ -116,7 +116,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
                         MaterialPageRoute(
                             builder: (context) => ChatSeekingPage(ctx, conversation: conversation)));
                   },
-                  onLongPress: () => deleteDialog(context, conversation),
+                  onLongPress: () => optionsBottomSheet(context, conversation),
                   child: ListTile(
                     title: Text(conversation.name ?? "", style: conversationNameTextTheme,),
                   ),
@@ -138,6 +138,99 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
         ), // This trailing comma makes auto-formatting nicer for build methods.
       );
     }
+  }
+
+  void optionsBottomSheet(BuildContext context, Conversation conversation) {
+    double width = MediaQuery.of(context).size.width;
+    const padding = EdgeInsets.symmetric(horizontal: kDefaultPadding, vertical: kDefaultPadding / 2);
+    showModalBottomSheet<void>(
+      context: context,
+      builder: (BuildContext context) {
+        return Wrap(
+          direction: Axis.horizontal,
+          children: [
+            Container(
+              decoration: BoxDecoration(color: kContentColorLightTheme),
+              width: width,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  InkWell(
+                    onTap: () {
+                      Navigator.pop(context);
+                      renameDialog(context, conversation);
+                    },
+                    child: Padding(padding: padding,
+                      child: Text("Rename"),
+                    ),
+                  ),
+                  InkWell(
+                    onTap: () {
+                      Navigator.pop(context);
+                      deleteDialog(context, conversation);
+                    },
+                    child: Padding(padding: padding,
+                      child: Text("Delete Conversation", style: TextStyle(color: Colors.red),),
+                    ),
+                  )
+                ],
+              ),
+            ),
+            Padding(padding: const EdgeInsets.only(top: kDefaultPadding))
+          ],
+        );
+      },
+    );
+  }
+
+  void renameDialog(BuildContext context, Conversation conversation) {
+    print(conversation.name);
+    String newName = conversation.name ?? "";
+    showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            title: Text('Rename conversation'),
+            content: TextField(
+              controller: TextEditingController()..text = conversation.name ?? "",
+              onChanged: (value) {
+                newName = value;
+              },
+              decoration: InputDecoration(hintText: "Conversation name"),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  if (newName.isEmpty) {
+                    Fluttertoast.showToast(
+                        msg: "Name cannot be empty",
+                        toastLength: Toast.LENGTH_SHORT
+                    );
+                  } else {
+                    Conversation updatedConversation = conversation.copyWith(name: newName);
+                    ctx.dbHelper.updateConversation(updatedConversation).then((value) {
+                      Fluttertoast.showToast(
+                          msg: "Conversation name was successfully updated",
+                          toastLength: Toast.LENGTH_SHORT
+                      );
+                      int index = conversations.indexWhere((c) => c.id == updatedConversation.id);
+                      setState(() {
+                        conversations[index] = updatedConversation;
+                      });
+                      Navigator.pop(context);
+                    });
+                  }
+                },
+                child: Text('YES',),
+              ),
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: Text('CANCEL'),
+              ),
+            ],
+          );
+        });
   }
 
   void deleteDialog(BuildContext context, Conversation conversation) {

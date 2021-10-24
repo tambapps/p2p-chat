@@ -39,7 +39,6 @@ class _ChatPageState extends AbstractChatPageState<ChatPage> {
 }
 
 // TODO handle lost connections (e.g when a peer disconnect)
-// TODO when an user is renamed, it isn't taken into account
 abstract class AbstractChatPageState<T extends StatefulWidget> extends State<T> {
 
 
