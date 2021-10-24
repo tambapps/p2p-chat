@@ -22,29 +22,27 @@ class _ChatSeekingPageState extends AbstractChatPageState<ChatSeekingPage> {
 
   Set<ChatPeer> peers = HashSet();
   @override
-  String get stateLabel => 'Waiting for a connection...';
+  String get stateLabel => chat != null ? 'Waiting for a connection...' : "";
   @override
   SmartChat? chat;
+  // variable to know if we must dispose chat or not
+  // we want to keep it when we pass it to another ChatPage, and dispose it otherwise
+  bool keepChat = false;
 
   // will later be optional. Thats why it's nullable
   ChatPeerMulticaster? multicaster;
 
   _ChatSeekingPageState(Context ctx, Conversation conversation) : super(ctx, conversation, null);
 
-  @override
-  void initState() {
-    super.initState();
-    startSmartChat();
-  }
-
   void startSmartChat() async {
-    this.chat = await SmartChat.from(await getDesktopIpAddress(), (message) {
+    SmartChat chat = await SmartChat.from(await getDesktopIpAddress(), (message) {
     }, userData: ctx.userData, onNewSocket: (chat, user) {
       if (conversation != FAKE_CONVERSATION && user.id != conversation.mainUserId) {
         // if conversation id was provided, we only want to connect to a specific peer
         return false;
       }
       getConversation(user).then((conversation) {
+        this.keepChat = true;
         if (chat is ChatServer) {
           Navigator.pushReplacement(context,
               MaterialPageRoute(builder: (context) => ChatServerPage(ctx, conversation, chatServer: chat, messages: this.messages,)));
@@ -55,7 +53,10 @@ class _ChatSeekingPageState extends AbstractChatPageState<ChatSeekingPage> {
       });
       return true;
     });
-    chat!.start();
+    chat.start();
+    setState(() {
+      this.chat = chat;
+    });
   }
 
   /// return the provided conversation or create a new one
@@ -79,10 +80,23 @@ class _ChatSeekingPageState extends AbstractChatPageState<ChatSeekingPage> {
   }
 
   @override
+  List<Widget>? buildActions() {
+    return this.chat != null ? null : [
+      // TODO find appropriate icon
+      IconButton(onPressed: this.startSmartChat,
+          icon: Icon(
+            Icons.share,
+          ))
+    ];
+  }
+
+  @override
   void dispose() {
     this.multicaster?.close();
-    // to avoid super class from closing socket
-    this.chat = null;
+    if (keepChat) {
+      // to avoid super class from closing socket
+      this.chat = null;
+    }
     super.dispose();
   }
 }

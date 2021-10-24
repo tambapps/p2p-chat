@@ -129,6 +129,7 @@ abstract class AbstractChatPageState<T extends StatefulWidget> extends State<T> 
   AppBar buildAppBar() {
     return AppBar(
       automaticallyImplyLeading: false,
+      actions: buildActions(),
       title: Row(
         children: [
           BackButton(),
@@ -151,6 +152,11 @@ abstract class AbstractChatPageState<T extends StatefulWidget> extends State<T> 
       ),
     );
   }
+
+  List<Widget>? buildActions() {
+    return null;
+  }
+
   @override
   void dispose() {
     chat?.close();
