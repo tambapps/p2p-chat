@@ -20,12 +20,11 @@ class MyApp extends StatelessWidget {
 
   MyApp(this.context, this.conversations);
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     final appBarTheme = AppBarTheme(centerTitle: false, elevation: 0, color: kPrimaryColor);
     return MaterialApp(
-      title: 'Flutter Demo',
+      title: APP_NAME,
       theme: ThemeData.dark().copyWith(
         primaryColor: kPrimaryColor,
         scaffoldBackgroundColor: kContentColorLightTheme,
