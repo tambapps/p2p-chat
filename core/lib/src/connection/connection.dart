@@ -13,7 +13,7 @@ abstract class Connection {
 
   void sendText(String data);
 
-  StreamSubscription<dynamic> listen(void Function(Uint8List event) onData, {Function? onError});
+  StreamSubscription<dynamic> listen(void Function(Uint8List event) onData, {Function? onError, void Function()? onDone});
 
   void close();
 
@@ -24,7 +24,8 @@ abstract class ConnectionServer<T extends Connection> {
   InternetAddress get address;
   int get port;
 
-  StreamSubscription<dynamic> listen(ConnectionCallback<T> callback);
+  StreamSubscription<dynamic> listen(ConnectionCallback<T> callback,
+      {Function? onError, void Function()? onDone});
 
   void close();
 }

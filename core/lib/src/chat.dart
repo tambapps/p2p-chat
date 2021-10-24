@@ -70,9 +70,7 @@ typedef MessageCallback = void Function(Message message);
 /// return false if user should be filtered
 typedef ChatConnectionCallback = bool Function(Chat chat, UserData data);
 
-// TODO handle server errors
 class ChatServer extends Chat {
-
 
   // HTTP port. Required since we're using an Http Server for the Web Socket
   static const PORT = 8000;
@@ -91,14 +89,20 @@ class ChatServer extends Chat {
   @override
   String get key => address.address;
 
+  final Function? onServerError;
+  final Function? onConnectionError;
+  final void Function()? onServerDone;
+  final void Function()? onConnectionDone;
+
   ChatPeer get chatPeer => ChatPeer.from(address, PeerType.SERVER, port, userData);
 
-  ChatServer(this.server, this.onMessageReceived, {this.onNewSocket, this.userData = ANONYMOUS_USER});
+  ChatServer(this.server, this.onMessageReceived, {this.onNewSocket, this.userData = ANONYMOUS_USER, this.onServerError, this.onConnectionError, this.onServerDone, this.onConnectionDone});
 
   static Future<ChatServer> from(address, MessageCallback onMessageReceived,
-      {ChatConnectionCallback? onNewSocket, UserData userData = ANONYMOUS_USER}) async {
+      {ChatConnectionCallback? onNewSocket, UserData userData = ANONYMOUS_USER, Function? onServerError,
+        Function? onConnectionError, void Function()? onServerDone, void Function()? onConnectionDone}) async {
     final server = await WebSocketServer.from(await toAddress(address), ChatServer.PORT);
-    return ChatServer(server, onMessageReceived, onNewSocket: onNewSocket, userData: userData);
+    return ChatServer(server, onMessageReceived, onNewSocket: onNewSocket, userData: userData, onServerError: onServerError, onServerDone: onServerDone, onConnectionDone: onConnectionDone, onConnectionError: onConnectionError);
   }
 
   void start() {
@@ -106,8 +110,8 @@ class ChatServer extends Chat {
       connection.automaton = ChatServerAutomaton(onMessageReceived,
           (chat, handshakeData) => _automatonOnNewSocket(connection, chat, handshakeData),
           userKeyStore);
-      connection.listen((bytes) => connection.automaton.act(this, bytes));
-    });
+      connection.listen((bytes) => connection.automaton.act(this, bytes), onError: onConnectionError, onDone: onConnectionDone);
+    }, onError: onServerError, onDone: onServerDone);
   }
 
   /// automaton callback to know if it must put
@@ -160,21 +164,21 @@ class ChatClient extends Chat {
 
   /// [address] must be the String address, or the InternetAddress
   static Future<ChatClient> from(addressArg,
-      MessageCallback onMessageReceived, {Function? onError, UserData userData = ANONYMOUS_USER}) async {
+      MessageCallback onMessageReceived, {Function? onError, void Function()? onDone, UserData userData = ANONYMOUS_USER}) async {
     var address = await toAddress(addressArg);
     var port = ChatServer.PORT;
 
     final connection = await WebSocketConnection.from(address, port);
-    return ChatClient(connection, onMessageReceived, onError: onError, userData: userData);
+    return ChatClient(connection, onMessageReceived, onError: onError, onDone: onDone, userData: userData);
   }
 
   ChatClient(this.connection, MessageCallback onMessageReceived,
-      {Function? onError, this.userData = ANONYMOUS_USER}) {
+      {Function? onError, void Function()? onDone, this.userData = ANONYMOUS_USER}) {
     automaton = ChatClientAutomaton(onMessageReceived);
     // sending handshake data
     // using the IP as key
     connection.sendText(jsonEncode(HandshakeData(userData, key)));
-    connection.listen((bytes) => automaton.act(this, bytes), onError: onError);
+    connection.listen((bytes) => automaton.act(this, bytes), onError: onError, onDone: onDone);
   }
 
   @override

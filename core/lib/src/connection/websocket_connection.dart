@@ -31,8 +31,8 @@ class WebSocketConnection implements Connection {
     _webSocket.add(data.codeUnits);
   }
   @override
-  StreamSubscription<dynamic> listen(void Function(Uint8List event) onData, {Function? onError}) {
-    return _webSocket.listen((event) => onData(event), onError: onError);
+  StreamSubscription<dynamic> listen(void Function(Uint8List event) onData, {Function? onError, void Function()? onDone}) {
+    return _webSocket.listen((event) => onData(event), onError: onError, onDone: onDone);
   }
 
   @override
@@ -56,12 +56,12 @@ class WebSocketServer implements ConnectionServer<WebSocketConnection> {
   }
 
   @override
-  StreamSubscription<HttpRequest> listen(ConnectionCallback<WebSocketConnection> onNewConnection) {
+  StreamSubscription<HttpRequest> listen(ConnectionCallback<WebSocketConnection> onNewConnection, {Function? onError, void Function()? onDone}) {
     return _server.listen((HttpRequest request) {
       WebSocketTransformer.upgrade(request).then((WebSocket ws) => onNewConnection(WebSocketConnection(address, port, ws)),
-          onError: (err) => print('[!]Error -- ${err.toString()}'));
+          onError: onError);
 
-    }, onError: (err) => print('[!]Error -- ${err.toString()}'));
+    }, onError: onError, onDone: onDone);
   }
 
   void close({bool force = false}) {
