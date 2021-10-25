@@ -8,8 +8,14 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../constants.dart';
 
 // TODO make it stateful and on click display date for 5 seconds
-class MessageWidget extends StatelessWidget {
-  const MessageWidget({
+class MessageWidget extends StatefulWidget {
+
+  final UserData userData;
+  final Message message;
+  final Message? previousMessage;
+  final Function(Message) deleteCallback;
+
+  MessageWidget({
     Key? key,
     required this.message,
     required this.userData,
@@ -17,31 +23,50 @@ class MessageWidget extends StatelessWidget {
     this.previousMessage
   }) : super(key: key);
 
+  @override
+  State<StatefulWidget> createState() {
+    return _MessageWidgetState(userData: userData, message: message, previousMessage: previousMessage, deleteCallback: deleteCallback);
+  }
+}
+class _MessageWidgetState extends State<MessageWidget> {
+
+  _MessageWidgetState({
+    required this.message,
+    required this.userData,
+    required this.deleteCallback,
+    this.previousMessage
+  });
+
   // used to know if is sender or not
   final UserData userData;
   final Message message;
   final Message? previousMessage;
   final Function(Message) deleteCallback;
+  bool forceShowDate = false;
+  Future? cancelFuture;
 
   @override
   Widget build(BuildContext context) {
     final bool shouldDisplayHeadline = _shouldDisplayHeadline();
     final bool shouldDisplayTime = _shouldDisplayTime();
     return Padding(
-      padding: EdgeInsets.only(top: shouldDisplayHeadline ? kDefaultPadding * 5.0 / 6.0 : 0),
+      padding: EdgeInsets.only(top: shouldDisplayHeadline ? kDefaultPadding * 2.0 / 6.0 : 0),
       child: InkWell(
-        onTap: () {},
+        onTap: _forceShowDate,
         onLongPress: () => showOptions(context),
         child: Padding(padding: const EdgeInsets.symmetric(horizontal: kDefaultPadding, vertical: kDefaultPadding / 6),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.start,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              if (shouldDisplayHeadline) Padding(padding: const EdgeInsets.only(top: 8)),
-              if (shouldDisplayTime) ConstrainedBox(
+               AnimatedContainer(duration: Duration(milliseconds: shouldDisplayTime || forceShowDate ? 400 : 600),
                 constraints: const BoxConstraints(minWidth: double.infinity),
+              height: shouldDisplayTime || forceShowDate ? (previousMessage != null ? kDefaultPadding * 1.5 : kDefaultPadding) : 0,
+              curve: shouldDisplayTime || forceShowDate ? Curves.fastOutSlowIn : Curves.easeIn,
+              child: Align(
+                alignment: Alignment.bottomCenter,
                 child: Text(formatDate(message.sentAt), style: TextStyle(color: Colors.white30), textAlign: TextAlign.center,),
-              ),
+              ),),
               if (shouldDisplayHeadline) Text(message.userData.username,
                 style: TextStyle(fontSize: 16, color: message.userData.id == userData.id ? kPrimaryColor : null, fontWeight: FontWeight.bold),),
               Linkify(
@@ -140,7 +165,19 @@ class MessageWidget extends StatelessWidget {
   }
 
   bool _shouldDisplayHeadline() {
-    return previousMessage == null || previousMessage!.userData.id != message.userData.id || message.sentAt.difference(previousMessage!.sentAt).abs().inMinutes >= 4;
+    return previousMessage == null || previousMessage!.userData.id != message.userData.id || message.sentAt.difference(previousMessage!.sentAt).abs().inMinutes > 10;
+  }
+  void _forceShowDate() {
+    if (this.cancelFuture != null) {
+      return;
+    }
+    setState(() {
+      forceShowDate = true;
+    });
+    this.cancelFuture = Future.delayed(const Duration(seconds: 3), () => setState(() {
+      forceShowDate = false;
+      this.cancelFuture = null;
+    }));
   }
 }
 
