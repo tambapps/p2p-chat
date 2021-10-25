@@ -4,10 +4,10 @@ import 'package:flutter_linkify/flutter_linkify.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:p2p_chat_core/p2p_chat_core.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:p2p_chat_core/p2p_chat_core.dart';
 
 import '../../constants.dart';
 
+// TODO make it stateful and on click display date for 5 seconds
 class MessageWidget extends StatelessWidget {
   const MessageWidget({
     Key? key,
@@ -26,6 +26,7 @@ class MessageWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final bool shouldDisplayHeadline = _shouldDisplayHeadline();
+    final bool shouldDisplayTime = _shouldDisplayTime();
     return Padding(
       padding: EdgeInsets.only(top: shouldDisplayHeadline ? kDefaultPadding * 5.0 / 6.0 : 0),
       child: InkWell(
@@ -36,11 +37,11 @@ class MessageWidget extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.start,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              if (shouldDisplayHeadline) Padding(padding: const EdgeInsets.only(top: 4, bottom: 4),
-                child: ConstrainedBox(
-                  constraints: const BoxConstraints(minWidth: double.infinity),
-                  child: Text(formatDate(message.sentAt), style: TextStyle(color: Colors.white30), textAlign: TextAlign.center,),
-                ),),
+              if (shouldDisplayHeadline) Padding(padding: const EdgeInsets.only(top: 8)),
+              if (shouldDisplayTime) ConstrainedBox(
+                constraints: const BoxConstraints(minWidth: double.infinity),
+                child: Text(formatDate(message.sentAt), style: TextStyle(color: Colors.white30), textAlign: TextAlign.center,),
+              ),
               if (shouldDisplayHeadline) Text(message.userData.username,
                 style: TextStyle(fontSize: 16, color: message.userData.id == userData.id ? kPrimaryColor : null, fontWeight: FontWeight.bold),),
               Linkify(
@@ -133,6 +134,11 @@ class MessageWidget extends StatelessWidget {
         toastLength: Toast.LENGTH_SHORT
     );
   }
+
+  bool _shouldDisplayTime() {
+    return previousMessage == null || message.sentAt.difference(previousMessage!.sentAt).abs().inMinutes > 10;
+  }
+
   bool _shouldDisplayHeadline() {
     return previousMessage == null || previousMessage!.userData.id != message.userData.id || message.sentAt.difference(previousMessage!.sentAt).abs().inMinutes >= 4;
   }
