@@ -4,6 +4,7 @@ import 'package:flutter_linkify/flutter_linkify.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:p2p_chat_core/p2p_chat_core.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:p2p_chat_core/p2p_chat_core.dart';
 
 import '../../constants.dart';
 
@@ -35,10 +36,13 @@ class MessageWidget extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.start,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // TODO display time like in Discord (if it were yesterday, display 'yesterday')
               if (shouldDisplayHeadline) Padding(padding: const EdgeInsets.only(top: 4, bottom: 4),
-                child: Text(message.userData.username,
-                  style: TextStyle(fontSize: 16, color: message.userData.id == userData.id ? kPrimaryColor : null, fontWeight: FontWeight.bold),),),
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(minWidth: double.infinity),
+                  child: Text(formatDate(message.sentAt), style: TextStyle(color: Colors.white30), textAlign: TextAlign.center,),
+                ),),
+              if (shouldDisplayHeadline) Text(message.userData.username,
+                style: TextStyle(fontSize: 16, color: message.userData.id == userData.id ? kPrimaryColor : null, fontWeight: FontWeight.bold),),
               Linkify(
                 onOpen: (link) async {
                   if (await canLaunch(link.url)) {
@@ -130,7 +134,7 @@ class MessageWidget extends StatelessWidget {
     );
   }
   bool _shouldDisplayHeadline() {
-    return previousMessage == null || previousMessage!.userData.id != message.userData.id || previousMessage!.sentAt.difference(message.sentAt).inMinutes >= 4;
+    return previousMessage == null || previousMessage!.userData.id != message.userData.id || message.sentAt.difference(previousMessage!.sentAt).abs().inMinutes >= 4;
   }
 }
 

@@ -1,5 +1,7 @@
 import 'dart:io';
 
+import 'package:intl/intl.dart';
+
 Future<InternetAddress> toAddress(address) async {
   if (address == null) {
     throw ArgumentError('address cannot be null');
@@ -30,4 +32,32 @@ Future<InternetAddress> getDesktopIpAddress() async {
   }
   // didn't find any better way to choose when there are several IPs
   return addresses[0];
+}
+
+final _MONTH_FORMAT = DateFormat("MMM");
+
+String formatDate(DateTime dateTime) {
+  final now = DateTime.now();
+  final yesterday = DateTime.now().subtract(Duration(days: 1));
+  String time = _twoDigitsNumber(dateTime.hour) + ":" + _twoDigitsNumber(dateTime.minute);
+  if (_isSameDay(dateTime, now)) {
+    return _twoDigitsNumber(dateTime.hour) + ":" + _twoDigitsNumber(dateTime.minute);
+  }
+  String monthAndDay =  dateTime.day.toString() + " " + _MONTH_FORMAT.format(dateTime) + ".";
+  if (_isSameYear(dateTime, now)) {
+    return monthAndDay + " " + time;
+  }
+  return monthAndDay + " " + dateTime.year.toString() + ", " + time;
+}
+
+String _twoDigitsNumber(int n) {
+  return n < 10 ? "0" + n.toString() : n.toString();
+}
+
+bool _isSameDay(DateTime d1, DateTime d2) {
+  return d1.day == d2.day && d1.month == d1.month && d1.year == d2.year;
+}
+
+bool _isSameYear(DateTime d1, DateTime d2) {
+  return d1.year == d2.year;
 }
