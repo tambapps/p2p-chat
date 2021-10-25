@@ -185,7 +185,6 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
   }
 
   void renameDialog(BuildContext context, Conversation conversation) {
-    print(conversation.name);
     String newName = conversation.name ?? "";
     showDialog(
         context: context,

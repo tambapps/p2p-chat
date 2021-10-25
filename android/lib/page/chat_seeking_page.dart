@@ -36,7 +36,6 @@ class _ChatSeekingPageState extends AbstractChatPageState<ChatSeekingPage> {
 
   _ChatSeekingPageState(Context ctx, Conversation conversation, bool? seeking) : super(ctx, conversation, null) {
     this.seeking = seeking ?? false;
-    print(seeking);
   }
 
   @override
