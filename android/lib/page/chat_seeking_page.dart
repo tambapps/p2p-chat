@@ -23,25 +23,24 @@ class _ChatSeekingPageState extends AbstractChatPageState<ChatSeekingPage> {
 
   Set<ChatPeer> peers = HashSet();
   @override
-  String get stateLabel => seeking ? 'Waiting for a connection...' : "";
+  String get stateLabel => online ? 'Waiting for a connection...' : "";
   @override
   SmartChat? chat;
   // variable to know if we must dispose chat or not
   // we want to keep it when we pass it to another ChatPage, and dispose it otherwise
   bool keepChat = false;
-  bool seeking = false;
 
   // will later be optional. Thats why it's nullable
   ChatPeerMulticaster? multicaster;
 
-  _ChatSeekingPageState(Context ctx, Conversation conversation, bool? seeking) : super(ctx, conversation, null) {
-    this.seeking = seeking ?? false;
+  _ChatSeekingPageState(Context ctx, Conversation conversation, bool? online) : super(ctx, conversation, null) {
+    this.online = online ?? false;
   }
 
   @override
   void initState() {
     super.initState();
-    if (seeking) {
+    if (online) {
       startSmartChat();
     }
   }
@@ -68,7 +67,7 @@ class _ChatSeekingPageState extends AbstractChatPageState<ChatSeekingPage> {
     chat.start();
     setState(() {
       this.chat = chat;
-      seeking = true;
+      online = true;
     });
   }
 
@@ -84,7 +83,7 @@ class _ChatSeekingPageState extends AbstractChatPageState<ChatSeekingPage> {
   void onServerDone() {
     if (!mounted) return;
     setState(() {
-      seeking = false;
+      online = false;
     });
   }
 
@@ -109,12 +108,8 @@ class _ChatSeekingPageState extends AbstractChatPageState<ChatSeekingPage> {
   }
 
   @override
-  List<Widget>? buildActions() {
-    double size = 24;
-    return this.chat != null ? null : [
-      IconButton(onPressed: this.startSmartChat,
-          icon: Image(image: AssetImage('assets/link.png'), width: size, height: size,))
-    ];
+  void goOnline() {
+    startSmartChat();
   }
 
   @override

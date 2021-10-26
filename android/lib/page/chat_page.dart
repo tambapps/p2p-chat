@@ -2,9 +2,9 @@ import 'dart:collection';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:p2p_chat_android/model/models.dart';
 import 'package:p2p_chat_android/widgets/message.dart';
-import 'package:p2p_chat_android/util/functions.dart';
 import 'package:p2p_chat_core/p2p_chat_core.dart';
 
 import '../constants.dart';
@@ -24,11 +24,15 @@ class ChatPage extends StatefulWidget {
 class _ChatPageState extends AbstractChatPageState<ChatPage> {
 
   @override
-  String get stateLabel => 'client';
+  String get stateLabel => online ? 'client' : 'offline';
   @override
-  final ChatClient chat;
+  ChatClient chat;
 
-  _ChatPageState(this.chat, Context ctx, Conversation conversation, List<Message>? messages) : super(ctx, conversation, messages);
+  _ChatPageState(this.chat, Context ctx, Conversation conversation, List<Message>? messages) : super(ctx, conversation, messages) {
+    online = true;
+    chat.onError = onError;
+    chat.onDone = onDone;
+  }
 
   @override
   void initState() {
@@ -36,9 +40,33 @@ class _ChatPageState extends AbstractChatPageState<ChatPage> {
     chat.setMessageCallback(this.onNewMessage);
   }
 
+  @override
+  void goOnline() async {
+    chat.close();
+    chat = await ChatClient.from(chat.address, onNewMessage, onError: chat.onError, onDone: chat.onDone, userData: chat.userData);
+  }
+
+  void onError(e) {
+    Fluttertoast.showToast(
+        msg: "An error occurred: " + e.toString(),
+        toastLength: Toast.LENGTH_SHORT
+    );
+    setState(() {
+      online = false;
+    });
+  }
+
+  void onDone() {
+    Fluttertoast.showToast(
+        msg: "Chat ended",
+        toastLength: Toast.LENGTH_SHORT
+    );
+    setState(() {
+      online = false;
+    });
+  }
 }
 
-// TODO handle lost connections (e.g when a peer disconnect)
 abstract class AbstractChatPageState<T extends StatefulWidget> extends State<T> {
 
 
@@ -51,6 +79,8 @@ abstract class AbstractChatPageState<T extends StatefulWidget> extends State<T> 
   String get stateLabel;
 
   Chat? get chat;
+  // online = seeking or connected
+  bool online = false;
 
   AbstractChatPageState(this.ctx, this.conversation, List<Message>? messages) {
     if (messages != null) {
@@ -153,8 +183,19 @@ abstract class AbstractChatPageState<T extends StatefulWidget> extends State<T> 
   }
 
   List<Widget>? buildActions() {
-    return null;
+    const double size = 24;
+    return !online ? [
+      IconButton(onPressed: () {
+        goOnline();
+        setState(() {
+          online = true;
+        });
+      },
+          icon: Image(image: AssetImage('assets/link.png'), width: size, height: size,))
+    ] : null;
   }
+
+  void goOnline();
 
   @override
   void dispose() {
@@ -186,10 +227,17 @@ class _ChatServerPageState extends AbstractChatPageState<ChatServerPage> {
   Chat? get chat => chatServer;
 
   @override
-  String get stateLabel => 'server';
+  String get stateLabel => online ? 'server' : 'offline';
 
   _ChatServerPageState(this.chatServer, Context ctx, Conversation conversation,
-      List<Message>? messages) : super(ctx, conversation, messages);
+      List<Message>? messages) : super(ctx, conversation, messages) {
+    online = true;
+    chatServer?..onServerError = onServerError
+    ..onServerDone = onServerDone
+    ..onConnectionError = onConnectionError
+    ..onConnectionDone = onConnectionDone;
+  }
+
 
   @override
   void initState() {
@@ -206,5 +254,44 @@ class _ChatServerPageState extends AbstractChatPageState<ChatServerPage> {
     chatServer = await ChatServer.from(address, this.onNewMessage);
 
     chatServer!.start();
+  }
+
+  @override
+  void goOnline() {
+    chatServer?.close();
+    startChatServer();
+  }
+
+  void onServerError(e) {
+    setState(() {
+      online = false;
+    });
+  }
+
+  void onServerDone() {
+    setState(() {
+      online = false;
+    });
+  }
+
+  void onConnectionError(e) {
+    if (chatServer == null) {
+      return;
+    }
+    Fluttertoast.showToast(
+        msg: "An error occurred: " + e.toString(),
+        toastLength: Toast.LENGTH_SHORT
+    );
+  }
+
+  void onConnectionDone() {
+    if (chatServer == null) {
+      return;
+    }
+    String message = chatServer!.connections.length == 1 ? "The user disconnected from chat" : "An user disconnected from chat";
+    Fluttertoast.showToast(
+        msg: message,
+        toastLength: Toast.LENGTH_SHORT
+    );
   }
 }
