@@ -81,6 +81,8 @@ abstract class AbstractChatPageState<T extends StatefulWidget> extends State<T> 
   Chat? get chat;
   // online = seeking or connected
   bool online = false;
+  ScrollController _scrollController = ScrollController();
+  bool shouldScrollDown = false;
 
   AbstractChatPageState(this.ctx, this.conversation, List<Message>? messages) {
     if (messages != null) {
@@ -110,17 +112,23 @@ abstract class AbstractChatPageState<T extends StatefulWidget> extends State<T> 
     ctx.dbHelper.insertNewMessage(conversation.id, message.userData, MessageType.TEXT, Uint8List.fromList(message.text.codeUnits), message.sentAt)
         .then((value) => setState(() {
           this.messages.add(message);
+          shouldScrollDown = true;
         }));
   }
 
   @override
   Widget build(BuildContext context) {
+    if (shouldScrollDown) {
+      Future.delayed(const Duration(milliseconds: 100), scrollDown);
+      shouldScrollDown = false;
+    }
     return Scaffold(
       appBar: buildAppBar(),
       body:  Column(
         children: [
           Expanded(
             child: ListView.builder(
+              controller: _scrollController,
               itemCount: messages.length,
               itemBuilder: (context, index) =>
                   MessageWidget(message: messages[index], userData: ctx.userData, previousMessage: index > 0 ? messages[index - 1] : null, deleteCallback: this.deleteMessage,),
@@ -141,6 +149,13 @@ abstract class AbstractChatPageState<T extends StatefulWidget> extends State<T> 
       messages.remove(message);
       messageIdMap.remove(message);
     }));
+  }
+
+  void scrollDown() {
+    _scrollController.animateTo(
+      _scrollController.position.maxScrollExtent,
+      duration: const Duration(milliseconds: 200),
+      curve: Curves.fastOutSlowIn,);
   }
 
   bool canSendMessages() {
