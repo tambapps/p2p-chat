@@ -110,12 +110,10 @@ class _ChatSeekingPageState extends AbstractChatPageState<ChatSeekingPage> {
 
   @override
   List<Widget>? buildActions() {
+    double size = 24;
     return this.chat != null ? null : [
-      // TODO find appropriate icon
       IconButton(onPressed: this.startSmartChat,
-          icon: Icon(
-            Icons.share,
-          ))
+          icon: Image(image: AssetImage('assets/link.png'), width: size, height: size,))
     ];
   }
 

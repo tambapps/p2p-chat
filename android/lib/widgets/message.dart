@@ -7,7 +7,6 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../../constants.dart';
 
-// TODO make it stateful and on click display date for 5 seconds
 class MessageWidget extends StatefulWidget {
 
   final UserData userData;
