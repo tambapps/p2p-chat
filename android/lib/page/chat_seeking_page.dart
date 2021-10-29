@@ -23,7 +23,7 @@ class _ChatSeekingPageState extends AbstractChatPageState<ChatSeekingPage> {
 
   Set<ChatPeer> peers = HashSet();
   @override
-  String get stateLabel => online ? 'Waiting for a connection...' : "";
+  String get stateLabel => online ? 'Waiting for a connection...' : 'offline';
   @override
   SmartChat? chat;
   // variable to know if we must dispose chat or not

@@ -177,7 +177,7 @@ abstract class AbstractChatPageState<T extends StatefulWidget> extends State<T> 
       actions: buildActions(),
       leading: BackButton(),
       title: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Text(
             conversation.name ?? "unknown",
