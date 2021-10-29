@@ -33,4 +33,4 @@ Future<String> getDeviceId() async {
   }
 }
 
-const String APP_NAME = "PChat";
+const String APP_NAME = "P2P Messenger";

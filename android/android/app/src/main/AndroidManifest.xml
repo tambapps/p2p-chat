@@ -2,7 +2,7 @@
     package="com.tambapps.p2p.chat.android">
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
    <application
-        android:label="Pchat"
+        android:label="P2P Messenger"
         android:icon="@drawable/appicon">
         <activity
             android:name=".MainActivity"
