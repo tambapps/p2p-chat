@@ -81,20 +81,12 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
       return Scaffold(
         appBar: AppBar(
           automaticallyImplyLeading: false,
-          title: Row(
-            children: [
-              Container(
-                width: kDefaultPadding / 2,
-              ),
-              SizedBox(width: kDefaultPadding * 0.75),
-              Expanded(child: Text(
-                APP_NAME,
-                textAlign: TextAlign.center,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-              )
-              )
-            ],
+          centerTitle: true,
+          title: Text(
+            APP_NAME,
+            textAlign: TextAlign.center,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
           ),
           actions: [
             IconButton(

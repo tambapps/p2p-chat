@@ -173,24 +173,20 @@ abstract class AbstractChatPageState<T extends StatefulWidget> extends State<T> 
   AppBar buildAppBar() {
     return AppBar(
       automaticallyImplyLeading: false,
+      centerTitle: true,
       actions: buildActions(),
-      title: Row(
+      leading: BackButton(),
+      title: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          BackButton(),
-          SizedBox(width: kDefaultPadding * 0.75),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                conversation.name ?? "unknown",
-              overflow: TextOverflow.ellipsis,
-                style: TextStyle(fontSize: 16),
-              ),
-              Text(
-                stateLabel,
-                style: TextStyle(fontSize: 12),
-              )
-            ],
+          Text(
+            conversation.name ?? "unknown",
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(fontSize: 16),
+          ),
+          Text(
+            stateLabel,
+            style: TextStyle(fontSize: 12),
           )
         ],
       ),
@@ -198,7 +194,7 @@ abstract class AbstractChatPageState<T extends StatefulWidget> extends State<T> 
   }
 
   List<Widget>? buildActions() {
-    const double size = 24;
+    const double size = 20;
     return !online ? [
       IconButton(onPressed: () {
         goOnline();

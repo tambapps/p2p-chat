@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:p2p_chat_android/constants.dart';
 import 'package:p2p_chat_android/model/models.dart';
 import 'package:p2p_chat_android/widgets/text_input_field.dart';
 import 'package:p2p_chat_core/p2p_chat_core.dart';
@@ -26,22 +27,17 @@ class _SettingsPageState extends State<SettingsPage> {
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false,
-        title: Row(
-          children: [
-            BackButton(),
-            Expanded(child: Text(
-              "Settings",
-              textAlign: TextAlign.center,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-            ),
-            ),
-            // to balance BackButton
-            Container(width: 24.0,)
-          ],
+        centerTitle: true,
+        leading: BackButton(),
+        title: Text(
+          "Settings",
+          textAlign: TextAlign.center,
+          overflow: TextOverflow.ellipsis,
+          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
         ),
       ),
       body: Container(
+        margin: EdgeInsets.symmetric(horizontal: kDefaultPadding / 2, vertical: kDefaultPadding),
         child: UsernameTextInputField(onSubmit: this.updateUsername, username: ctx.userData.username,),
       ), // This trailing comma makes auto-formatting nicer for build methods.
     );
