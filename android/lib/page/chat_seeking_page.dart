@@ -1,6 +1,8 @@
 import 'dart:collection';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:p2p_chat_android/model/models.dart';
 import 'package:p2p_chat_android/page/chat_page.dart';
@@ -29,6 +31,7 @@ class _ChatSeekingPageState extends AbstractChatPageState<ChatSeekingPage> {
   // variable to know if we must dispose chat or not
   // we want to keep it when we pass it to another ChatPage, and dispose it otherwise
   bool keepChat = false;
+  final MulticastLock _lock = Platform.isAndroid ? AndroidMulticastLock() : NoOpMulticastLock();
 
   // will later be optional. Thats why it's nullable
   ChatPeerMulticaster? multicaster;
@@ -45,6 +48,7 @@ class _ChatSeekingPageState extends AbstractChatPageState<ChatSeekingPage> {
     }
   }
   void startSmartChat() async {
+    await _lock.acquire();
     SmartChat chat = await SmartChat.from(await getDesktopIpAddress(), (message) {
     }, userData: ctx.userData, onNewSocket: (chat, user) {
       if (conversation != FAKE_CONVERSATION && user.id != conversation.mainUserId) {
@@ -119,6 +123,40 @@ class _ChatSeekingPageState extends AbstractChatPageState<ChatSeekingPage> {
       // to avoid super class from closing socket
       this.chat = null;
     }
+    _lock.release();
     super.dispose();
   }
 }
+
+abstract class MulticastLock {
+
+  Future<void> acquire();
+
+  Future<void> release();
+}
+
+class NoOpMulticastLock extends MulticastLock {
+  @override
+  Future<void> acquire() async {
+  }
+
+  @override
+  Future<void> release() async {
+  }
+
+}
+
+class AndroidMulticastLock extends MulticastLock {
+  final _methodChannel = MethodChannel("tambapps/network");
+
+  @override
+  Future<void> acquire() async {
+    await _methodChannel.invokeMethod("acquireMulticastLock");
+  }
+
+  @override
+  Future<void> release() async {
+    await _methodChannel.invokeMethod("releaseMulticastLock");
+  }
+}
+

@@ -6,6 +6,7 @@ import kotlinx.coroutines.withContext
 import kotlinx.coroutines.launch
 
 import android.net.wifi.WifiManager
+import android.os.Bundle
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
@@ -14,14 +15,13 @@ import java.util.*
 
 class MainActivity: FlutterActivity() {
 
-  // TODO use flutter plugin to acquire smart lock only when needed
   lateinit var lock: WifiManager.MulticastLock
-  override fun onStart() {
-    super.onStart()
+
+  override fun onCreate(savedInstanceState: Bundle?) {
+    super.onCreate(savedInstanceState)
     val wifiManager = applicationContext.getSystemService(WIFI_SERVICE) as WifiManager
     lock = wifiManager.createMulticastLock("MYLOCK")
     lock.setReferenceCounted(true)
-    lock.acquire()
   }
 
   override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
@@ -59,10 +59,6 @@ class MainActivity: FlutterActivity() {
         }
       }
     }
-  }
-  override fun onStop() {
-    super.onStop()
-    lock.release()
   }
 
   private fun findNetworkInterfacesForMulticast(): List<NetworkInterface> {
