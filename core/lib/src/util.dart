@@ -20,6 +20,8 @@ Future<InternetAddress> toAddress(address) async {
 
 Future<List<InternetAddress>> getDesktopAddresses() async {
   return (await NetworkInterface.list(includeLoopback: false, includeLinkLocal: true))
+      // we want the wifi network interface
+      .where((nInterface) => nInterface.name == 'wlan0')
       .expand((interface) => interface.addresses).toList(growable: false);
 }
 /// doesn't work on android according to https://stackoverflow.com/questions/52411168/how-to-get-device-ip-in-dart-flutter
