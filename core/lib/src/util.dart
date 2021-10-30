@@ -1,7 +1,5 @@
 import 'dart:io';
 
-import 'package:intl/intl.dart';
-
 Future<InternetAddress> toAddress(address) async {
   if (address == null) {
     throw ArgumentError('address cannot be null');
@@ -35,7 +33,6 @@ Future<NetworkInterface> getWifiNetworkInterface() async {
   }
 }
 
-// TODO rename it. It also works on Android
 Future<List<InternetAddress>> getDesktopAddresses() async {
   return (await getWifiNetworkInterface()).addresses;
 }
