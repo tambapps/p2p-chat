@@ -12,7 +12,7 @@ const USERNAME_ARG = 'username';
 void main(List<String> arguments) async {
   print('P2P Chat 0.0.1');
   var argResults = getArgs(arguments);
-  var callback = (Message message) => print('${message.userData.username} at ${message.sentAt.hour}:${message.sentAt.second}:\n${message.text}');
+  var callback = (Message message) => print('${message.userData.username} at ${formatDate(message.sentAt)}:\n${message.text}');
   final username = argResults[USERNAME_ARG] ?? Platform.localHostname;
 
   Chat chat;
