@@ -66,11 +66,12 @@ abstract class Chat {
 }
 
 typedef MessageCallback = void Function(Message message);
+typedef ConnectionDoneCallback = void Function(UserData? userData);
+typedef ConnectionErrorCallback = void Function(Object exception, UserData? userData);
 
 /// return false if user should be filtered
 typedef ChatConnectionCallback = bool Function(Chat chat, UserData data);
 
-// TODO pass userdata on onConnectionDone/onConnectionError callback, so that we can remove user from connectedUsers (among other things)
 class ChatServer extends Chat {
 
   // HTTP port. Required since we're using an Http Server for the Web Socket
@@ -91,10 +92,10 @@ class ChatServer extends Chat {
   String get key => address.address;
 
   Function? onServerError;
-  Function? onConnectionError;
+  ConnectionErrorCallback? onConnectionError;
   void Function()? onServerDone;
-  void Function()? onConnectionDone;
-  Set<UserData> connectedUsers = new HashSet();
+  ConnectionDoneCallback? onConnectionDone;
+  Set<UserData> connectedUsers = HashSet();
 
   ChatPeer get chatPeer => ChatPeer.from(address, PeerType.SERVER, port, userData);
 
@@ -102,17 +103,18 @@ class ChatServer extends Chat {
 
   static Future<ChatServer> from(address, MessageCallback onMessageReceived,
       {ChatConnectionCallback? onNewSocket, UserData userData = ANONYMOUS_USER, Function? onServerError,
-        Function? onConnectionError, void Function()? onServerDone, void Function()? onConnectionDone}) async {
+        ConnectionErrorCallback? onConnectionError, void Function()? onServerDone, ConnectionDoneCallback? onConnectionDone}) async {
     final server = await WebSocketServer.from(await toAddress(address), ChatServer.PORT);
     return ChatServer(server, onMessageReceived, onNewSocket: onNewSocket, userData: userData, onServerError: onServerError, onServerDone: onServerDone, onConnectionDone: onConnectionDone, onConnectionError: onConnectionError);
   }
 
   void start() {
     server.listen((final connection) {
-      connection.automaton = ChatServerAutomaton(onMessageReceived,
-          (chat, handshakeData) => _automatonOnNewSocket(connection, chat, handshakeData),
+      final automaton = ChatServerAutomaton(onMessageReceived,
+              (chat, handshakeData) => _automatonOnNewSocket(connection, chat, handshakeData),
           userKeyStore);
-      connection.listen((bytes) => connection.automaton.act(this, bytes), onError: _doOnConnectionError, onDone: _doOnConnectionDone);
+      connection.automaton = automaton;
+      connection.listen((bytes) => automaton.act(this, bytes), onError: (e) => _doOnConnectionError(e, automaton.user), onDone: () => _doOnConnectionDone(automaton.user));
     }, onError: _doOnServerError, onDone: _doOnServerDone);
   }
 
@@ -129,16 +131,18 @@ class ChatServer extends Chat {
     }
   }
 
-  void _doOnConnectionError(e) {
+  void _doOnConnectionError(e, UserData? user) {
     if (onConnectionError != null) {
-      onConnectionError!(e);
+      onConnectionError!(e, user);
     }
+    connectedUsers.remove(user);
   }
 
-  void _doOnConnectionDone() {
+  void _doOnConnectionDone(UserData? user) {
     if (onConnectionDone != null) {
-      onConnectionDone!();
+      onConnectionDone!(user);
     }
+    connectedUsers.remove(user);
   }
 
   /// automaton callback to know if it must put
@@ -255,12 +259,12 @@ class SmartChat extends Chat {
   String get key => chat.key;
   Set<UserData> get connectedUsers => chatServer.connectedUsers;
 
-  final Function? onConnectionError;
-  final void Function()? onConnectionDone;
+  final ConnectionErrorCallback? onConnectionError;
+  final ConnectionDoneCallback? onConnectionDone;
 
   static Future<SmartChat> from(address, MessageCallback onMessageReceived,
       {ChatConnectionCallback? onNewSocket, PeerType peerType = PeerType.ANY, UserData userData = ANONYMOUS_USER,
-        Function? onServerError, Function? onConnectionError, Function()? onServerDone, Function()? onConnectionDone}) async {
+        Function? onServerError, ConnectionErrorCallback? onConnectionError, Function()? onServerDone, ConnectionDoneCallback? onConnectionDone}) async {
     final multicaster = await ChatPeerMulticaster.newInstance();
     final listener = await ChatPeerListener.newInstance();
     final server = await ChatServer.from(address, onMessageReceived, userData: userData, onNewSocket: (chat, data) {
@@ -315,7 +319,9 @@ class SmartChat extends Chat {
   }
 
   Future<bool> _connectTo(ChatPeer chatPeer) async {
-    Chat chat = await ChatClient.from(chatPeer.internetAddress, onMessageReceived, userData: chatServer.userData, onError: onConnectionError, onDone: onConnectionDone);
+    Chat chat = await ChatClient.from(chatPeer.internetAddress, onMessageReceived, userData: chatServer.userData,
+        onError: onConnectionError != null ? (e) => onConnectionError!(e, null) : null,
+        onDone: onConnectionDone != null ? () => onConnectionDone!(null) : null);
     if (connectedUsers.add(chatPeer.userData) && (chatServer.onNewSocket?.call(chat, chatPeer.userData) ?? true)) {
       this.chat = chat;
       chatServer.close();

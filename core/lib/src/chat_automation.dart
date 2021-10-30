@@ -46,6 +46,7 @@ class ChatServerAutomaton extends ChatAutomaton<ChatServer> {
   
   final ChatAutomatonConnectionCallback onNewSocket;
   final UserKeyStore _userKeyStore;
+  UserData? user;
 
   ChatServerAutomaton(MessageCallback onMessageReceived, this.onNewSocket, this._userKeyStore)
       : super(onMessageReceived);
@@ -59,6 +60,9 @@ class ChatServerAutomaton extends ChatAutomaton<ChatServer> {
         //   add optional key password
         // there should be security checks later, to control who can access a chat or not
         state = onNewSocket(chat, handshakeData) ? CONNECTED : DISCONNECTED;
+        if (state == CONNECTED) {
+          user = handshakeData.userData;
+        }
         break;
     }
   }

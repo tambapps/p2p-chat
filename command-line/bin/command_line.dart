@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'dart:math';
 
 import 'package:args/args.dart';
 import 'package:p2p_chat_core/p2p_chat_core.dart';
@@ -45,6 +46,14 @@ Future<Chat> serverChat(MessageCallback messageCallback, InternetAddress address
         print('${user.username} connected!');
         print("Tap text and press 'Enter' to send a message");
         return true;
+      }, onConnectionDone: (user) {
+    if (user != null) {
+      print('${user.username} disconnected');
+    }
+      }, onConnectionError: (error, user) {
+        if (user != null) {
+          print('An error occurred with ${user.username}: ${e.toString()}');
+        }
       });
   chatServer.start();
   print('Server started on ${chatServer.address.address}.\nWaiting on a connection...');
