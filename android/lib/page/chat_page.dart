@@ -289,21 +289,20 @@ class _ChatServerPageState extends AbstractChatPageState<ChatServerPage> {
     }
   }
 
-  void onConnectionError(e) {
+  void onConnectionError(e, UserData? user) {
     if (chatServer == null) {
       return;
     }
-    Fluttertoast.showToast(
-        msg: "An error occurred: " + e.toString(),
-        toastLength: Toast.LENGTH_SHORT
-    );
+    String message = user != null ? 'An error occured with ${user.username}: ' + e.toString()
+        : "An error occurred: " + e.toString();
+    Fluttertoast.showToast(msg: message, toastLength: Toast.LENGTH_SHORT);
   }
 
-  void onConnectionDone() {
+  void onConnectionDone(UserData? user) {
     if (chatServer == null) {
       return;
     }
-    String message = chatServer!.connections.length == 1 ? "The user disconnected from chat" : "An user disconnected from chat";
+    String message = user != null ? "${user.username} disconnected from chat" : "An user disconnected from chat";
     Fluttertoast.showToast(
         msg: message,
         toastLength: Toast.LENGTH_SHORT
