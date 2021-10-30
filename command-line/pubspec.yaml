@@ -12,8 +12,6 @@ dependencies:
   p2p_chat_core:
     path: ../core
   args: ^2.1.1
-  meta: ^1.3.0
-
 
 dev_dependencies:
   pedantic: ^1.10.0
