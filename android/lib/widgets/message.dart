@@ -73,7 +73,10 @@ class _MessageWidgetState extends State<MessageWidget> {
                   if (await canLaunch(link.url)) {
                     await launch(link.url);
                   } else {
-                    throw 'Could not launch $link';
+                    Fluttertoast.showToast(
+                        msg: "Couldn't open link",
+                        toastLength: Toast.LENGTH_SHORT
+                    );
                   }
                 },
                 text: message.text,
