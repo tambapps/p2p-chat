@@ -61,9 +61,11 @@ class _ChatPageState extends AbstractChatPageState<ChatPage> {
         msg: "Chat ended",
         toastLength: Toast.LENGTH_SHORT
     );
-    setState(() {
-      online = false;
-    });
+    if (mounted) {
+      setState(() {
+        online = false;
+      });
+    }
   }
 }
 
@@ -280,9 +282,11 @@ class _ChatServerPageState extends AbstractChatPageState<ChatServerPage> {
   }
 
   void onServerDone() {
-    setState(() {
-      online = false;
-    });
+    if (mounted) {
+      setState(() {
+        online = false;
+      });
+    }
   }
 
   void onConnectionError(e) {

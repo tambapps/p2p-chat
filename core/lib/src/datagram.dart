@@ -16,8 +16,9 @@ class DatagramSocket {
   DatagramSocket(this.datagramSocket);
 
   static Future<DatagramSocket> from(int port, {InternetAddress? address, InternetAddress? groupAddress}) async {
-    final socket = await RawDatagramSocket.bind(address ?? InternetAddress.anyIPv4, port);
+    final socket = await RawDatagramSocket.bind(address ?? InternetAddress.anyIPv6, port);
     socket.readEventsEnabled = true;
+    socket.setRawOption(RawSocketOption.fromInt(RawSocketOption.levelIPv6, RawSocketOption.IPv6MulticastInterface, (await getWifiNetworkInterface()).index));
     if (groupAddress != null) {
       socket.joinMulticast(groupAddress);
     }

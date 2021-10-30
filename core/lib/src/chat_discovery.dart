@@ -10,7 +10,8 @@ import 'dart:io';
 import 'package:p2p_chat_core/p2p_chat_core.dart';
 import 'package:p2p_chat_core/src/datagram.dart';
 
-final InternetAddress MULTICAST_GROUP_ADDRESS = InternetAddress('224.0.0.8');
+// using IPv6 because multicast in Android only works with IpV6 addresses
+final InternetAddress MULTICAST_GROUP_ADDRESS = InternetAddress('ff02::1');
 final int PEER_DISCOVERY_PORT = 5001;
 
 
@@ -21,8 +22,7 @@ class ChatPeerMulticaster {
   Timer? timer;
 
   static Future<ChatPeerMulticaster> newInstance() async {
-    return ChatPeerMulticaster(await DatagramSocket.from(PEER_DISCOVERY_PORT,
-        address: await getDesktopIpAddress(), groupAddress: MULTICAST_GROUP_ADDRESS));
+    return ChatPeerMulticaster(await DatagramSocket.from(PEER_DISCOVERY_PORT, groupAddress: MULTICAST_GROUP_ADDRESS));
   }
 
   ChatPeerMulticaster(this.datagramSocket);
