@@ -19,17 +19,20 @@ Future<InternetAddress> toAddress(address) async {
 }
 
 Future<List<NetworkInterface>> getNetworkInterfaces() async {
-  return (await NetworkInterface.list(includeLoopback: false, includeLinkLocal: true))
-  // we want the wifi network interface
-      .where((nInterface) => nInterface.name == 'wlan0')
-      .toList();
+  return NetworkInterface.list(includeLoopback: false, includeLinkLocal: true);
 }
 
 Future<NetworkInterface> getWifiNetworkInterface() async {
-  return (await NetworkInterface.list(includeLoopback: false, includeLinkLocal: true))
-  // we want the wifi network interface
-      .where((nInterface) => nInterface.name == 'wlan0')
-      .first;
+  List<NetworkInterface> interfaces = await getNetworkInterfaces();
+  print(interfaces.map((e) => e.name));
+  if (interfaces.length == 1) {
+    return interfaces[1];
+  }
+  try {
+    return interfaces.firstWhere((nInterface) => nInterface.name == 'wlan0');
+  } catch (e) {
+    return interfaces[1];
+  }
 }
 
 // TODO rename it. It also works on Android
@@ -51,6 +54,7 @@ Future<InternetAddress> getDesktopIpAddress() async {
 
 final _MONTH_FORMAT = DateFormat("MMM");
 
+// TODO remove intl dependency and format month manually
 String formatDate(DateTime dateTime) {
   final now = DateTime.now();
   final yesterday = DateTime.now().subtract(Duration(days: 1));

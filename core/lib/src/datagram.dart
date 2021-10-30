@@ -9,16 +9,12 @@ class DatagramSocket {
 
   final RawDatagramSocket datagramSocket;
 
-  static Future<DatagramSocket> newInstance() async {
-    return DatagramSocket(await RawDatagramSocket.bind(await getDesktopIpAddress(), 0));
-  }
-
   DatagramSocket(this.datagramSocket);
 
-  static Future<DatagramSocket> from(int port, {InternetAddress? address, InternetAddress? groupAddress}) async {
+  static Future<DatagramSocket> from(int port, {InternetAddress? address, InternetAddress? groupAddress, required NetworkInterface networkInterface}) async {
     final socket = await RawDatagramSocket.bind(address ?? InternetAddress.anyIPv6, port);
     socket.readEventsEnabled = true;
-    socket.setRawOption(RawSocketOption.fromInt(RawSocketOption.levelIPv6, RawSocketOption.IPv6MulticastInterface, (await getWifiNetworkInterface()).index));
+    socket.setRawOption(RawSocketOption.fromInt(RawSocketOption.levelIPv6, RawSocketOption.IPv6MulticastInterface, networkInterface.index));
     if (groupAddress != null) {
       socket.joinMulticast(groupAddress);
     }

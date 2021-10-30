@@ -1,8 +1,3 @@
-
-// will contain ChatDirector, a class making handshake and deciding who should be
-// the sender peer
-
-
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
@@ -14,18 +9,23 @@ import 'package:p2p_chat_core/src/datagram.dart';
 final InternetAddress MULTICAST_GROUP_ADDRESS = InternetAddress('ff02::1');
 final int PEER_DISCOVERY_PORT = 5001;
 
-
 class ChatPeerMulticaster {
 
-  final DatagramSocket datagramSocket;
+  // one socket per network interface
+  final List<DatagramSocket> datagramSockets;
   List<ChatPeer> chatPeers = [];
   Timer? timer;
 
   static Future<ChatPeerMulticaster> newInstance() async {
-    return ChatPeerMulticaster(await DatagramSocket.from(PEER_DISCOVERY_PORT, groupAddress: MULTICAST_GROUP_ADDRESS));
+    var interfaces = await getNetworkInterfaces();
+    List<DatagramSocket> sockets = [];
+    for (var interface in interfaces) {
+      sockets.add(await DatagramSocket.from(PEER_DISCOVERY_PORT, groupAddress: MULTICAST_GROUP_ADDRESS, networkInterface: interface));
+    }
+    return ChatPeerMulticaster(sockets);
   }
 
-  ChatPeerMulticaster(this.datagramSocket);
+  ChatPeerMulticaster(this.datagramSockets);
 
   void start() {
     timer = Timer.periodic(Duration(seconds: 1), (t) => multicast());
@@ -37,40 +37,54 @@ class ChatPeerMulticaster {
   }
 
   void multicast() {
-    datagramSocket.multicastObject(chatPeers, MULTICAST_GROUP_ADDRESS, PEER_DISCOVERY_PORT);
+    for (var datagramSocket in datagramSockets) {
+      datagramSocket.multicastObject(chatPeers, MULTICAST_GROUP_ADDRESS, PEER_DISCOVERY_PORT);
+    }
   }
 
   void close() {
-    datagramSocket.close();
+    for (var datagramSocket in datagramSockets) {
+      datagramSocket.close();
+    }
   }
 }
 
 class ChatPeerListener {
 
   static Future<ChatPeerListener> newInstance() async {
-    var datagramSocket = await DatagramSocket.from(PEER_DISCOVERY_PORT);
-    return ChatPeerListener(datagramSocket);
+    var interfaces = await getNetworkInterfaces();
+    List<DatagramSocket> sockets = [];
+    for (var interface in interfaces) {
+      sockets.add(await DatagramSocket.from(PEER_DISCOVERY_PORT, networkInterface: interface));
+    }
+    return ChatPeerListener(sockets);
   }
 
-  final DatagramSocket datagramSocket;
+  final List<DatagramSocket> datagramSockets;
 
-  ChatPeerListener(this.datagramSocket) {
-    datagramSocket.joinGroup(MULTICAST_GROUP_ADDRESS);
+  ChatPeerListener(this.datagramSockets) {
+    for (var datagramSocket in datagramSockets) {
+      datagramSocket.joinGroup(MULTICAST_GROUP_ADDRESS);
+    }
   }
 
   void listen(void Function(List<ChatPeer> chatPeer) onChatPeerDiscovered) {
-    datagramSocket.listen((data) {
-      try {
-        Iterable l = jsonDecode(String.fromCharCodes(data));
-        var chatPeers = List<ChatPeer>.from(l.map((model) => ChatPeer.fromJson(model)));
-        onChatPeerDiscovered(chatPeers);
-      } catch (e) {
-        // ignore exception
-      }
-    });
+    for (var datagramSocket in datagramSockets) {
+      datagramSocket.listen((data) {
+        try {
+          Iterable l = jsonDecode(String.fromCharCodes(data));
+          var chatPeers = List<ChatPeer>.from(l.map((model) => ChatPeer.fromJson(model)));
+          onChatPeerDiscovered(chatPeers);
+        } catch (e) {
+          // ignore exception
+        }
+      });
+    }
   }
 
   void close() {
-    datagramSocket.close();
+    for (var datagramSocket in datagramSockets) {
+      datagramSocket.close();
+    }
   }
 }

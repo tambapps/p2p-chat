@@ -70,6 +70,7 @@ typedef MessageCallback = void Function(Message message);
 /// return false if user should be filtered
 typedef ChatConnectionCallback = bool Function(Chat chat, UserData data);
 
+// TODO pass userdata on onConnectionDone/onConnectionError callback, so that we can remove user from connectedUsers (among other things)
 class ChatServer extends Chat {
 
   // HTTP port. Required since we're using an Http Server for the Web Socket
@@ -93,6 +94,7 @@ class ChatServer extends Chat {
   Function? onConnectionError;
   void Function()? onServerDone;
   void Function()? onConnectionDone;
+  Set<UserData> connectedUsers = new HashSet();
 
   ChatPeer get chatPeer => ChatPeer.from(address, PeerType.SERVER, port, userData);
 
@@ -141,7 +143,7 @@ class ChatServer extends Chat {
 
   /// automaton callback to know if it must put
   bool _automatonOnNewSocket(Connection connection, Chat chat, HandshakeData handshakeData) {
-    if (onNewSocket == null || onNewSocket!(chat, handshakeData.userData)) {
+    if (connectedUsers.add(handshakeData.userData) && (onNewSocket == null || onNewSocket!(chat, handshakeData.userData))) {
       userKeyStore.put(handshakeData.userData, handshakeData.key);
       connections.add(connection);
       return true;
@@ -251,6 +253,7 @@ class SmartChat extends Chat {
   Chat chat;
   @override
   String get key => chat.key;
+  Set<UserData> get connectedUsers => chatServer.connectedUsers;
 
   final Function? onConnectionError;
   final void Function()? onConnectionDone;
@@ -313,7 +316,7 @@ class SmartChat extends Chat {
 
   Future<bool> _connectTo(ChatPeer chatPeer) async {
     Chat chat = await ChatClient.from(chatPeer.internetAddress, onMessageReceived, userData: chatServer.userData, onError: onConnectionError, onDone: onConnectionDone);
-    if (chatServer.onNewSocket?.call(chat, chatPeer.userData) ?? true) {
+    if (connectedUsers.add(chatPeer.userData) && (chatServer.onNewSocket?.call(chat, chatPeer.userData) ?? true)) {
       this.chat = chat;
       chatServer.close();
       multicaster.close();

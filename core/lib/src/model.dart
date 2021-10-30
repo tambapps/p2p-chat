@@ -49,11 +49,12 @@ class UserData {
   Map<String, dynamic> toJson() => _$UserDataToJson(this);
 
   @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-          other is UserData &&
-              runtimeType == other.runtimeType &&
-              id == other.id;
+  bool operator ==(Object other) {
+    return identical(this, other) || other is UserData && id == other.id;
+  }
+
+  @override
+  int get hashCode => id.hashCode;
 
   UserData copyWithUsername(String username) {
     return UserData(id, username);

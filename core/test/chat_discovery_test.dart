@@ -26,7 +26,7 @@ void main() {
     });
 
     test('Test receive', () async {
-      var chatPeerListener = ChatPeerListener(DatagramSocket(await RawDatagramSocket.bind(await getDesktopIpAddress(), 0)));
+      var chatPeerListener = ChatPeerListener([DatagramSocket(await RawDatagramSocket.bind(await getDesktopIpAddress(), 0))]);
       chatPeerListener.listen((chatPeer) {
         print(chatPeer);
       });
