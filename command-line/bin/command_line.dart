@@ -5,6 +5,8 @@ import 'dart:math';
 import 'package:args/args.dart';
 import 'package:p2p_chat_core/p2p_chat_core.dart';
 
+import 'desktop_network_provider.dart';
+
 const SERVER_ARG = 'server';
 const ADDRESS_ARG = 'address';
 const WITH_ARG = 'with';
@@ -16,13 +18,14 @@ void main(List<String> arguments) async {
   var callback = (Message message) => print('${message.userData.username} at ${formatDate(message.sentAt)}:\n${message.text}');
   final username = argResults[USERNAME_ARG] ?? Platform.localHostname;
 
+  DesktopNetworkProvider networkProvider = DesktopNetworkProvider(argResults[ADDRESS_ARG] != null ? await toAddress(argResults[ADDRESS_ARG]) : null);
   Chat chat;
   if (argResults[SERVER_ARG]) {
-    chat = await serverChat(callback, argResults[ADDRESS_ARG] != null ? await toAddress(argResults[ADDRESS_ARG]) : await getDesktopIpAddress(), username);
+    chat = await serverChat(callback, networkProvider, username);
   } else if (argResults[WITH_ARG] != null) {
     chat = await clientChat(callback, await toAddress(argResults[WITH_ARG]), username);
   } else {
-    chat = await smartChat(callback, argResults[ADDRESS_ARG] != null ? await toAddress(argResults[ADDRESS_ARG]) : await getDesktopIpAddress(), username);
+    chat = await smartChat(callback, networkProvider, username);
   }
 
   // dart is single threaded. If I would have processed the lines synchronously (e.g with stdin.readLineSync())
@@ -40,8 +43,8 @@ Future<Chat> clientChat(MessageCallback messageCallback, InternetAddress address
   return chat;
 }
 
-Future<Chat> serverChat(MessageCallback messageCallback, InternetAddress address, String username) async {
-  var chatServer = await ChatServer.from(address, messageCallback, userData: userData(username),
+Future<Chat> serverChat(MessageCallback messageCallback, DesktopNetworkProvider networkProvider, String username) async {
+  var chatServer = await ChatServer.from(networkProvider, messageCallback, userData: userData(username),
       onNewSocket: (chat, user) {
         print('${user.username} connected!');
         print("Tap text and press 'Enter' to send a message");
@@ -57,15 +60,15 @@ Future<Chat> serverChat(MessageCallback messageCallback, InternetAddress address
       });
   chatServer.start();
   print('Server started on ${chatServer.address.address}.\nWaiting on a connection...');
-  var multicaster = await ChatPeerMulticaster.newInstance();
+  var multicaster = await ChatPeerMulticaster.newInstance(await networkProvider.listMulticastNetworkInterfaces());
   multicaster.chatPeers = [ chatServer.chatPeer ];
   multicaster.start();
   return chatServer;
 }
 
-Future<Chat> smartChat(MessageCallback messageCallback, InternetAddress address, String username) async {
+Future<Chat> smartChat(MessageCallback messageCallback, DesktopNetworkProvider networkProvider, String username) async {
   print('Looking/waiting for another chat peer');
-  var chat = await SmartChat.from(address, messageCallback, userData: userData(username), onNewSocket: (chat, user) {
+  var chat = await SmartChat.from(networkProvider, messageCallback, userData: userData(username), onNewSocket: (chat, user) {
     if (chat is ChatServer) {
       print('${user.username} connected to your chat!');
     } else {
