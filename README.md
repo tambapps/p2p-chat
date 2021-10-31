@@ -14,16 +14,22 @@ in my computer (it is worth mentioning it as my computer is really slow) and the
 
 ## Android app
 The Android app allows you to start conversations, and store sent/received messages.
-TODO include screenshots
+
+![android app screenshots](https://raw.githubusercontent.com/tambapps/p2p-chat/main/images/android.jpg)
 
 ## Command-line app (desktop)
 The command line app allows you to send/receive messages
 
+![command line app screenshots](https://raw.githubusercontent.com/tambapps/p2p-chat/main/images/commandline.png)
+
+
+## Core
+This is the library to perform chats. This is where (most of) the magic happens
 
 ## How it works
 There is two kind of peers: the client and the server.
 Each peer starts a server and multicast its server's entry point (address + port) across a multicast group.
-The peers use a process so that only one peer connects to the server of the other (it would be useless to have two connections
+The peers use a logic so that only one peer connects to the server of the other (it would be useless to have two connections
 for one chat).
 
 Then, the chat can begin
