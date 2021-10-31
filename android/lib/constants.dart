@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 const kPrimaryColor = Color(0xFF00BF6D);
 const kSecondaryColor = Color(0xFF00FFFF);
@@ -8,3 +9,4 @@ const kWarninngColor = Color(0xFFF3BB1C);
 const kErrorColor = Color(0xFFF03738);
 
 const kDefaultPadding = 20.0;
+const androidMethodChannel = MethodChannel("tambapps/network");

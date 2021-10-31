@@ -7,7 +7,7 @@ import 'package:p2p_chat_android/model/models.dart';
 import 'package:p2p_chat_android/widgets/message.dart';
 import 'package:p2p_chat_core/p2p_chat_core.dart';
 
-import '../constants.dart';
+import '../android_network_provider.dart';
 import '../widgets/text_input_field.dart';
 
 class ChatPage extends StatefulWidget {
@@ -263,8 +263,7 @@ class _ChatServerPageState extends AbstractChatPageState<ChatServerPage> {
   }
 
   Future<void> startChatServer() async {
-    var address = await getDesktopIpAddress();
-    chatServer = await ChatServer.from(address, this.onNewMessage);
+    chatServer = await ChatServer.from(AndroidNetworkProvider(), this.onNewMessage);
 
     chatServer!.start();
   }

@@ -29,9 +29,9 @@ class MainActivity: FlutterActivity() {
     MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "tambapps/network").setMethodCallHandler {
         call, result ->
       when (call.method) {
-        "listNetworkInterfacesForMulticast" -> CoroutineScope(Dispatchers.IO).launch {
+        "listNetworkInterfaces" -> CoroutineScope(Dispatchers.IO).launch {
           val listResult = kotlin.runCatching {
-            findNetworkInterfacesForMulticast()
+            listNetworkInterfaces()
           }
 
           withContext(Dispatchers.Main) {
@@ -41,7 +41,12 @@ class MainActivity: FlutterActivity() {
             } else {
               result.success(listResult.getOrNull()!!.map {
                 // Flutter only handle 'simple' types
-                mapOf<String, Any>(Pair("name", it.name), Pair("index", it.index))
+                mapOf<String, Any>(
+                  Pair("name", it.name),
+                  Pair("index", it.index),
+                  Pair("supportsMulticast", it.supportsMulticast()),
+                  Pair("addresses", Collections.list(it.inetAddresses).map { a -> a.toString().replace("/", "") })
+                )
               })
             }
           }
@@ -61,14 +66,14 @@ class MainActivity: FlutterActivity() {
     }
   }
 
-  private fun findNetworkInterfacesForMulticast(): List<NetworkInterface> {
+  private fun listNetworkInterfaces(): List<NetworkInterface> {
     val enumeration: Enumeration<NetworkInterface> = NetworkInterface.getNetworkInterfaces()
     val interfaces = mutableListOf<NetworkInterface>()
     var i: NetworkInterface? = null
     while (enumeration.hasMoreElements()) {
       i = enumeration.nextElement()
 
-      if (i != null && !i.isLoopback && i.supportsMulticast()) {
+      if (i != null && !i.isLoopback) {
         interfaces.add(i)
       }
     }

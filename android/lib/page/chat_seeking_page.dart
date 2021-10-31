@@ -4,9 +4,12 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:p2p_chat_android/android_network_provider.dart';
 import 'package:p2p_chat_android/model/models.dart';
 import 'package:p2p_chat_android/page/chat_page.dart';
 import 'package:p2p_chat_core/p2p_chat_core.dart';
+
+import '../constants.dart';
 
 const FAKE_CONVERSATION = const Conversation(0, 'Looking for a peer', 'some_fake_id');
 
@@ -32,6 +35,7 @@ class _ChatSeekingPageState extends AbstractChatPageState<ChatSeekingPage> {
   // we want to keep it when we pass it to another ChatPage, and dispose it otherwise
   bool keepChat = false;
   final MulticastLock _lock = Platform.isAndroid ? AndroidMulticastLock() : NoOpMulticastLock();
+  final AndroidNetworkProvider networkProvider = AndroidNetworkProvider();
 
   // will later be optional. Thats why it's nullable
   ChatPeerMulticaster? multicaster;
@@ -49,7 +53,7 @@ class _ChatSeekingPageState extends AbstractChatPageState<ChatSeekingPage> {
   }
   void startSmartChat() async {
     await _lock.acquire();
-    SmartChat chat = await SmartChat.from(await getDesktopIpAddress(), (message) {
+    SmartChat chat = await SmartChat.from(networkProvider, (message) {
     }, userData: ctx.userData, onNewSocket: (chat, user) {
       if (conversation != FAKE_CONVERSATION && user.id != conversation.mainUserId) {
         // if conversation id was provided, we only want to connect to a specific peer
@@ -147,16 +151,15 @@ class NoOpMulticastLock extends MulticastLock {
 }
 
 class AndroidMulticastLock extends MulticastLock {
-  final _methodChannel = MethodChannel("tambapps/network");
 
   @override
   Future<void> acquire() async {
-    await _methodChannel.invokeMethod("acquireMulticastLock");
+    await androidMethodChannel.invokeMethod("acquireMulticastLock");
   }
 
   @override
   Future<void> release() async {
-    await _methodChannel.invokeMethod("releaseMulticastLock");
+    await androidMethodChannel.invokeMethod("releaseMulticastLock");
   }
 }
 
