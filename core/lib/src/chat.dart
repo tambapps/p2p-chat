@@ -6,6 +6,7 @@ import 'dart:math';
 
 import 'package:meta/meta.dart';
 import 'package:p2p_chat_core/src/connection/connection.dart';
+import 'package:p2p_chat_core/src/network.dart';
 import 'connection/websocket_connection.dart';
 import 'util.dart';
 
@@ -101,10 +102,10 @@ class ChatServer extends Chat {
 
   ChatServer(this.server, this.onMessageReceived, {this.onNewSocket, this.userData = ANONYMOUS_USER, this.onServerError, this.onConnectionError, this.onServerDone, this.onConnectionDone});
 
-  static Future<ChatServer> from(address, MessageCallback onMessageReceived,
+  static Future<ChatServer> from(NetworkProvider networkProvider, MessageCallback onMessageReceived,
       {ChatConnectionCallback? onNewSocket, UserData userData = ANONYMOUS_USER, Function? onServerError,
         ConnectionErrorCallback? onConnectionError, void Function()? onServerDone, ConnectionDoneCallback? onConnectionDone}) async {
-    final server = await WebSocketServer.from(await toAddress(address), ChatServer.PORT);
+    final server = await WebSocketServer.from(await networkProvider.getIpAddress(), ChatServer.PORT);
     return ChatServer(server, onMessageReceived, onNewSocket: onNewSocket, userData: userData, onServerError: onServerError, onServerDone: onServerDone, onConnectionDone: onConnectionDone, onConnectionError: onConnectionError);
   }
 
@@ -262,12 +263,13 @@ class SmartChat extends Chat {
   final ConnectionErrorCallback? onConnectionError;
   final ConnectionDoneCallback? onConnectionDone;
 
-  static Future<SmartChat> from(address, MessageCallback onMessageReceived,
+  static Future<SmartChat> from(NetworkProvider networkProvider, MessageCallback onMessageReceived,
       {ChatConnectionCallback? onNewSocket, PeerType peerType = PeerType.ANY, UserData userData = ANONYMOUS_USER,
         Function? onServerError, ConnectionErrorCallback? onConnectionError, Function()? onServerDone, ConnectionDoneCallback? onConnectionDone}) async {
-    final multicaster = await ChatPeerMulticaster.newInstance();
-    final listener = await ChatPeerListener.newInstance();
-    final server = await ChatServer.from(address, onMessageReceived, userData: userData, onNewSocket: (chat, data) {
+    final multicastInterfaces = await networkProvider.listMulticastNetworkInterfaces();
+    final multicaster = await ChatPeerMulticaster.newInstance(multicastInterfaces);
+    final listener = await ChatPeerListener.newInstance(multicastInterfaces);
+    final server = await ChatServer.from(networkProvider, onMessageReceived, userData: userData, onNewSocket: (chat, data) {
       if (onNewSocket == null || onNewSocket(chat, data)) {
         multicaster.close();
         listener.close();
@@ -276,7 +278,7 @@ class SmartChat extends Chat {
       return false;
     }, onServerError: onServerError, onServerDone: onServerDone, onConnectionError: onConnectionError, onConnectionDone: onConnectionDone);
 
-    // the chat is the server by default, if it will be overriden by a client chat
+    // the chat is the server by default, if it will be overridden by a client chat
     // if one chat peer is found
     return SmartChat(peerType, onMessageReceived, server, server, multicaster, listener);
   }

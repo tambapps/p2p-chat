@@ -2,8 +2,8 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:p2p_chat_core/p2p_chat_core.dart';
-import 'package:p2p_chat_core/src/datagram.dart';
+import 'datagram.dart';
+import 'model.dart';
 
 // using IPv6 because multicast in Android only works with IpV6 addresses
 final InternetAddress MULTICAST_GROUP_ADDRESS = InternetAddress('ff02::1');
@@ -16,8 +16,7 @@ class ChatPeerMulticaster {
   List<ChatPeer> chatPeers = [];
   Timer? timer;
 
-  static Future<ChatPeerMulticaster> newInstance() async {
-    var interfaces = await getNetworkInterfaces();
+  static Future<ChatPeerMulticaster> newInstance(List<NetworkInterface> interfaces) async {
     List<DatagramSocket> sockets = [];
     for (var interface in interfaces) {
       sockets.add(await DatagramSocket.from(PEER_DISCOVERY_PORT, groupAddress: MULTICAST_GROUP_ADDRESS, networkInterface: interface));
@@ -51,8 +50,7 @@ class ChatPeerMulticaster {
 
 class ChatPeerListener {
 
-  static Future<ChatPeerListener> newInstance() async {
-    var interfaces = await getNetworkInterfaces();
+  static Future<ChatPeerListener> newInstance(List<NetworkInterface> interfaces) async {
     List<DatagramSocket> sockets = [];
     for (var interface in interfaces) {
       sockets.add(await DatagramSocket.from(PEER_DISCOVERY_PORT, networkInterface: interface));

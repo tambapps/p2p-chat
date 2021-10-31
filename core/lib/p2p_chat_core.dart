@@ -7,3 +7,4 @@ export 'src/chat.dart';
 export 'src/model.dart';
 export 'src/util.dart';
 export 'src/chat_discovery.dart';
+export 'src/network.dart';
