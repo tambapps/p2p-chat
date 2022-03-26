@@ -99,6 +99,11 @@ abstract class AbstractChatPageState<T extends StatefulWidget> extends State<T> 
       // messages may already have been fetched and supplied to this page. If it's not the case, let's fetch them
       fetchMessages(conversation.id);
     }
+    Future.delayed(Duration(milliseconds: 500), () {
+      setState(() {
+        shouldScrollDown = true;
+      });
+    });
   }
 
   void fetchMessages(int conversationId) async {
