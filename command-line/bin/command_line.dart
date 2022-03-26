@@ -31,7 +31,7 @@ void main(List<String> arguments) async {
   // dart is single threaded. If I would have processed the lines synchronously (e.g with stdin.readLineSync())
   // it would have block the synchronously thread and gave no room for the server to handle requests
   stdin.transform(utf8.decoder).listen((String text) {
-    chat.sendText(text);
+    chat.sendText(text.trim());
   });
 }
 
